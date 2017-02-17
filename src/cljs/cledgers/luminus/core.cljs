@@ -70,10 +70,13 @@
 (defn clock []
   [:div.example-clock
    {:style {:color @(rf/subscribe [:time-color])}}
-   (-> @(rf/subscribe [:time])
-       .toTimeString
-       (clojure.string/split " ")
-       first)])
+   (let [time @(rf/subscribe [:time])]
+     (if (not time)
+       "oops"
+       (-> time
+           .toTimeString
+           (clojure.string/split " ")
+           first)))])
 
 (defonce do-timer (js/setInterval dispatch-timer-event 1000))
 
