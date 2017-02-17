@@ -77,25 +77,28 @@
 
 (defonce do-timer (js/setInterval dispatch-timer-event 1000))
 
-
-
-
-
-
-
-
 (defn home-page []
+  [:div.container
+   [:div.row>div.col-sm-12
+    [:div "Hello world, it is now"]
+    [clock]]])
+
+
+
+
+
+
+(defn luminus-home-page []
   [:div.container
    (when-let [docs @(rf/subscribe [:docs])]
      [:div.row>div.col-sm-12
-      ;; [:div {:dangerouslySetInnerHTML
-      ;;        {:__html (md->html docs)}}]
-      [:div "Hello world, it is now"]
-      [clock]
+      [:div {:dangerouslySetInnerHTML
+             {:__html (md->html docs)}}]
       ])])
 
 (def pages
   {:home #'home-page
+   :lum-home #'luminus-home-page
    :about #'about-page})
 
 (defn page []
@@ -110,8 +113,12 @@
 (secretary/defroute "/" []
   (rf/dispatch [:set-active-page :home]))
 
+(secretary/defroute "/luminus-home" []
+  (rf/dispatch [:set-active-page :lum-home]))
+
 (secretary/defroute "/about" []
   (rf/dispatch [:set-active-page :about]))
+
 
 ;; -------------------------
 ;; History
