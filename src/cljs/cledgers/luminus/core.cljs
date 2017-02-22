@@ -47,7 +47,7 @@
    (.log js/console "here!")
    {:time (js/Date.)
     :time-color "#f88"
-    :xaction-editing {:something ""}}))
+    :xaction-editing {:description ""}}))
 
 (rf/reg-event-db
  :timer
@@ -55,10 +55,15 @@
    (assoc db :time new-time)))
 
 (rf/reg-event-db
- :xaction-editing-change
- (fn [db [_ new-something-value]]
-   ;; (.log js/console (str "new val = " new-something-value))
-   (assoc-in db [:xaction-editing :something] new-something-value)))
+ :xaction-editing-change-description
+ (fn [db [_ new-description-value]]
+   ;; (.log js/console (str "new val = " new-description-value))
+   (assoc-in db [:xaction-editing :description] new-description-value)))
+
+(rf/reg-event-db
+ :xaction-editing-change-amount
+ (fn [db [_ new-amount-value]]
+   (assoc-in db [:xaction-editing :amount] new-amount-value)))
 
 (defn dispatch-timer-event []
   (let [now (js/Date.)]
@@ -75,9 +80,14 @@
    (:time-color db)))
 
 (rf/reg-sub
- :xaction-editing-something
+ :xaction-editing-description
  (fn [db _]
-   (get-in db [:xaction-editing :something])))
+   (get-in db [:xaction-editing :description])))
+
+(rf/reg-sub
+ :xaction-editing-amount
+ (fn [db _]
+   (get-in db [:xaction-editing :amount])))
 
 (defn clock []
   [:div.example-clock
@@ -101,15 +111,18 @@
     [:table.table
      [:thead
       [:tr
-       [:th "testing"]
-       [:th "testing 2"]
+       [:th "desc"]
+       [:th "amount"]
        [:th "testing 3"]]]
      [:tbody
       [:tr
        [:td [:input {:type "text"
-                     :value @(rf/subscribe [:xaction-editing-something])
-                     :on-change #(rf/dispatch [:xaction-editing-change (-> % .-target .-value)])
-                     }]]]]]]])
+                     :value @(rf/subscribe [:xaction-editing-description])
+                     :on-change #(rf/dispatch [:xaction-editing-change-description (-> % .-target .-value)])
+                     }]]
+       [:td [:input {:type "text"
+                     :value @(rf/subscribe [:xaction-editing-amount])
+                     :on-change #(rf/dispatch [:xaction-editing-change-amount (-> % .-target .-value)])}]]]]]]])
 
 
 
