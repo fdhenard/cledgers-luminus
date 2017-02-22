@@ -98,10 +98,18 @@
     [:div "Hello world, it is now"]
     [clock]]
    [:div.row>div.col-sm-12
-    [:input {:type "text"
-             :value @(rf/subscribe [:xaction-editing-something])
-             :on-change #(rf/dispatch [:xaction-editing-change (-> % .-target .-value)])
-             }]]])
+    [:table.table
+     [:thead
+      [:tr
+       [:th "testing"]
+       [:th "testing 2"]
+       [:th "testing 3"]]]
+     [:tbody
+      [:tr
+       [:td [:input {:type "text"
+                     :value @(rf/subscribe [:xaction-editing-something])
+                     :on-change #(rf/dispatch [:xaction-editing-change (-> % .-target .-value)])
+                     }]]]]]]])
 
 
 
