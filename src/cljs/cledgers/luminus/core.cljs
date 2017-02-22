@@ -180,8 +180,7 @@
    (when-let [docs @(rf/subscribe [:docs])]
      [:div.row>div.col-sm-12
       [:div {:dangerouslySetInnerHTML
-             {:__html (md->html docs)}}]
-      ])])
+             {:__html (md->html docs)}}]])])
 
 (def pages
   {:home #'home-page
