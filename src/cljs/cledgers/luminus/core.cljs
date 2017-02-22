@@ -161,7 +161,9 @@
        [:td [:button {:on-click (fn [evt] (rf/dispatch [:add-xaction]))} "Add"]]]
       (for [xaction (map #(get % 1) @(rf/subscribe [:xactions]))]
         [:tr {:key (:id xaction)}
-         [:td (pp xaction)]])]]]])
+         [:td (:date xaction)]
+         [:td (:description xaction)]
+         [:td (:amount xaction)]])]]]])
 
 
 
