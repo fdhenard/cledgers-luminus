@@ -46,15 +46,18 @@
 (defn pp [derta]
   (with-out-str (cljs.pprint/pprint derta)))
 
+(defn make-empty-xaction []
+  {:date ""
+   :description ""
+   :amount ""})
+
 (rf/reg-event-db
  :initialize
  (fn [_ _]
    (.log js/console "here!")
    {:time (js/Date.)
     :time-color "#f88"
-    :xaction-editing {:date ""
-                      :description ""
-                      :amount ""}
+    :xaction-editing (make-empty-xaction)
     :xactions {}}))
 
 (rf/reg-event-db
@@ -83,7 +86,9 @@
  (fn [db _]
    (let [new-id (str (uuid/make-random-uuid))]
      ;; (.log js/console "db" (pp db))
-     (assoc-in db [:xactions new-id] (merge {:id new-id} (:xaction-editing db))))))
+     (-> db
+         (assoc-in [:xactions new-id] (merge {:id new-id} (:xaction-editing db)))
+         (assoc :xaction-editing (make-empty-xaction))))))
 
 (defn dispatch-timer-event []
   (let [now (js/Date.)]
