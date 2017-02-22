@@ -6,6 +6,7 @@
             [goog.history.EventType :as HistoryEventType]
             [markdown.core :refer [md->html]]
             [ajax.core :refer [GET POST]]
+            [cljs-uuid-utils.core :as uuid]
             [cledgers.luminus.ajax :refer [load-interceptors!]]
             [cledgers.luminus.handlers]
             [cledgers.luminus.subscriptions])
@@ -47,7 +48,10 @@
    (.log js/console "here!")
    {:time (js/Date.)
     :time-color "#f88"
-    :xaction-editing {:description ""}}))
+    :xaction-editing {:date ""
+                      :description ""
+                      :amount ""}
+    :xactions {}}))
 
 (rf/reg-event-db
  :timer
@@ -64,6 +68,19 @@
  :xaction-editing-change-amount
  (fn [db [_ new-amount-value]]
    (assoc-in db [:xaction-editing :amount] new-amount-value)))
+
+(rf/reg-event-db
+ :xaction-editing-change-date
+ (fn [db [_ new-date-value]]
+   (assoc-in db [:xaction-editing :date] new-date-value)))
+
+(rf/reg-event-db
+ :add-xaction
+ (fn [db _]
+   (let [new-id (str (uuid/make-random-uuid))]
+     ;; (.log js/console "new id = " new-id)
+     (assoc-in db [:xactions new-id] {:id new-id})
+     )))
 
 (defn dispatch-timer-event []
   (let [now (js/Date.)]
@@ -89,6 +106,20 @@
  (fn [db _]
    (get-in db [:xaction-editing :amount])))
 
+(rf/reg-sub
+ :xaction-editing-date
+ (fn [db _]
+   (get-in db [:xaction-editing :date])))
+
+(defn pp [derta]
+  (with-out-str (cljs.pprint/pprint derta)))
+
+(rf/reg-sub
+ :xactions
+ (fn [db _]
+   ;; (.log js/console (str "db = " (pp db)))
+   (get db :xactions)))
+
 (defn clock []
   [:div.example-clock
    {:style {:color @(rf/subscribe [:time-color])}}
@@ -111,18 +142,27 @@
     [:table.table
      [:thead
       [:tr
+       [:th "date"]
        [:th "desc"]
        [:th "amount"]
-       [:th "testing 3"]]]
+       [:th "controls"]]]
      [:tbody
-      [:tr
+      [:tr {:key "new-one"}
+       [:td [:input {:type "text"
+                     :value @(rf/subscribe [:xaction-editing-date])
+                     :on-change #(rf/dispatch [:xaction-editing-change-date (-> % .-target .-value)])}]]
        [:td [:input {:type "text"
                      :value @(rf/subscribe [:xaction-editing-description])
                      :on-change #(rf/dispatch [:xaction-editing-change-description (-> % .-target .-value)])
                      }]]
        [:td [:input {:type "text"
                      :value @(rf/subscribe [:xaction-editing-amount])
-                     :on-change #(rf/dispatch [:xaction-editing-change-amount (-> % .-target .-value)])}]]]]]]])
+                     :on-change #(rf/dispatch [:xaction-editing-change-amount (-> % .-target .-value)])}]]
+       [:td [:button {:on-click (fn [evt] (rf/dispatch [:add-xaction]))} "Add"]]]
+      (for [xaction-kv-pair @(rf/subscribe [:xactions])]
+        (let [xaction (get xaction-kv-pair 1)]
+          [:tr {:key (:id xaction)}
+           [:td (pp xaction)]]))]]]])
 
 
 
