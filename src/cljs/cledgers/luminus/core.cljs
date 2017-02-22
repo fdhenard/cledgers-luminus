@@ -46,12 +46,19 @@
  (fn [_ _]
    (.log js/console "here!")
    {:time (js/Date.)
-    :time-color "#f88"}))
+    :time-color "#f88"
+    :xaction-editing {:something ""}}))
 
 (rf/reg-event-db
  :timer
  (fn [db [_ new-time]]
    (assoc db :time new-time)))
+
+(rf/reg-event-db
+ :xaction-editing-change
+ (fn [db [_ new-something-value]]
+   ;; (.log js/console (str "new val = " new-something-value))
+   (assoc-in db [:xaction-editing :something] new-something-value)))
 
 (defn dispatch-timer-event []
   (let [now (js/Date.)]
@@ -66,6 +73,11 @@
  :time-color
  (fn [db _]
    (:time-color db)))
+
+(rf/reg-sub
+ :xaction-editing-something
+ (fn [db _]
+   (get-in db [:xaction-editing :something])))
 
 (defn clock []
   [:div.example-clock
@@ -84,7 +96,12 @@
   [:div.container
    [:div.row>div.col-sm-12
     [:div "Hello world, it is now"]
-    [clock]]])
+    [clock]]
+   [:div.row>div.col-sm-12
+    [:input {:type "text"
+             :value @(rf/subscribe [:xaction-editing-something])
+             :on-change #(rf/dispatch [:xaction-editing-change (-> % .-target .-value)])
+             }]]])
 
 
 
