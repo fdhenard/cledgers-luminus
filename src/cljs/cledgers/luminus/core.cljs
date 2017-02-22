@@ -159,10 +159,9 @@
                      :value @(rf/subscribe [:xaction-editing-amount])
                      :on-change #(rf/dispatch [:xaction-editing-change-amount (-> % .-target .-value)])}]]
        [:td [:button {:on-click (fn [evt] (rf/dispatch [:add-xaction]))} "Add"]]]
-      (for [xaction-kv-pair @(rf/subscribe [:xactions])]
-        (let [xaction (get xaction-kv-pair 1)]
-          [:tr {:key (:id xaction)}
-           [:td (pp xaction)]]))]]]])
+      (for [xaction (map #(get % 1) @(rf/subscribe [:xactions]))]
+        [:tr {:key (:id xaction)}
+         [:td (pp xaction)]])]]]])
 
 
 
