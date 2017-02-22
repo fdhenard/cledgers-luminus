@@ -9,7 +9,8 @@
             [cljs-uuid-utils.core :as uuid]
             [cledgers.luminus.ajax :refer [load-interceptors!]]
             [cledgers.luminus.handlers]
-            [cledgers.luminus.subscriptions])
+            [cledgers.luminus.subscriptions]
+            [cledgers.luminus.login :as login-page])
   (:import goog.History))
 
 (defn nav-link [uri title page collapsed?]
@@ -185,7 +186,8 @@
 (def pages
   {:home #'home-page
    :lum-home #'luminus-home-page
-   :about #'about-page})
+   :about #'about-page
+   :login #'login-page/login-page})
 
 (defn page []
   [:div
@@ -204,6 +206,9 @@
 
 (secretary/defroute "/about" []
   (rf/dispatch [:set-active-page :about]))
+
+(secretary/defroute "/login" []
+  (rf/dispatch [:set-active-page :login]))
 
 
 ;; -------------------------
