@@ -42,6 +42,10 @@
 
 
 ;; fdh
+
+(defn pp [derta]
+  (with-out-str (cljs.pprint/pprint derta)))
+
 (rf/reg-event-db
  :initialize
  (fn [_ _]
@@ -78,9 +82,8 @@
  :add-xaction
  (fn [db _]
    (let [new-id (str (uuid/make-random-uuid))]
-     ;; (.log js/console "new id = " new-id)
-     (assoc-in db [:xactions new-id] {:id new-id})
-     )))
+     ;; (.log js/console "db" (pp db))
+     (assoc-in db [:xactions new-id] (merge {:id new-id} (:xaction-editing db))))))
 
 (defn dispatch-timer-event []
   (let [now (js/Date.)]
@@ -110,9 +113,6 @@
  :xaction-editing-date
  (fn [db _]
    (get-in db [:xaction-editing :date])))
-
-(defn pp [derta]
-  (with-out-str (cljs.pprint/pprint derta)))
 
 (rf/reg-sub
  :xactions
