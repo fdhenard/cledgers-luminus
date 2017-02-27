@@ -1,4 +1,4 @@
-(ns cledgers.luminus.login
+(ns cledgers.luminus.pages.login
   (:require [re-frame.core :as rf]))
 
 

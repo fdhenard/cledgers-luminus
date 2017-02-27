@@ -10,7 +10,7 @@
             [cledgers.luminus.ajax :refer [load-interceptors!]]
             [cledgers.luminus.handlers]
             [cledgers.luminus.subscriptions]
-            [cledgers.luminus.login :as login-page]
+            [cledgers.luminus.pages.login :as login-page]
             [accountant.core :as accountant]
             [cledgers.luminus.utils :as utils])
   (:import goog.History))
