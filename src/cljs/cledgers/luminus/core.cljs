@@ -1,3 +1,4 @@
+
 (ns cledgers.luminus.core
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
@@ -10,7 +11,8 @@
             [cledgers.luminus.ajax :refer [load-interceptors!]]
             [cledgers.luminus.handlers]
             [cledgers.luminus.subscriptions]
-            [cledgers.luminus.login :as login-page])
+            [cledgers.luminus.login :as login-page]
+            [accountant.core :as accountant])
   (:import goog.History))
 
 (defn nav-link [uri title page collapsed?]
@@ -59,7 +61,8 @@
    {:time (js/Date.)
     :time-color "#f88"
     :xaction-editing (make-empty-xaction)
-    :xactions {}}))
+    :xactions {}
+    :user nil}))
 
 (rf/reg-event-db
  :timer
@@ -90,6 +93,15 @@
      (-> db
          (assoc-in [:xactions new-id] (merge {:id new-id} (:xaction-editing db)))
          (assoc :xaction-editing (make-empty-xaction))))))
+
+(rf/reg-event-db
+ :login
+ (fn [db [_ user]]
+   (.log js/console "logging in user" (pp user))
+   (-> db
+       (assoc :user user)
+       (assoc :page :home))))
+
 
 (defn dispatch-timer-event []
   (let [now (js/Date.)]
@@ -125,6 +137,11 @@
  (fn [db _]
    ;; (.log js/console (str "db = " (pp db)))
    (get db :xactions)))
+
+(rf/reg-sub
+ :user
+ (fn [db _]
+   (get db :user)))
 
 (defn clock []
   [:div.example-clock
@@ -199,7 +216,13 @@
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (rf/dispatch [:set-active-page :home]))
+  (let [user @(rf/subscribe [:user])]
+    (do
+      (.log js/console "user" (pp user))
+      (if-not user
+        (rf/dispatch [:set-active-page :login])
+        ;; (accountant/navigate! "/#/login")
+        (rf/dispatch [:set-active-page :home])))))
 
 (secretary/defroute "/luminus-home" []
   (rf/dispatch [:set-active-page :lum-home]))
@@ -215,6 +238,14 @@
 ;; History
 ;; must be called after routes have been defined
 (defn hook-browser-navigation! []
+  ;; (accountant/configure-navigation!
+  ;;   {:nav-handler
+  ;;    (fn [path]
+  ;;      (secretary/dispatch! path))
+  ;;    :path-exists?
+  ;;    (fn [path]
+  ;;      (secretary/locate-route path))})
+  ;; (accountant/dispatch-current!)
   (doto (History.)
     (events/listen
       HistoryEventType/NAVIGATE
