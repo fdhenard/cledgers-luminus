@@ -7,12 +7,12 @@
             [goog.history.EventType :as HistoryEventType]
             [markdown.core :refer [md->html]]
             [ajax.core :refer [GET POST]]
-            [cljs-uuid-utils.core :as uuid]
             [cledgers.luminus.ajax :refer [load-interceptors!]]
             [cledgers.luminus.handlers]
             [cledgers.luminus.subscriptions]
             [cledgers.luminus.login :as login-page]
-            [accountant.core :as accountant])
+            [accountant.core :as accountant]
+            [cledgers.luminus.utils :as utils])
   (:import goog.History))
 
 (defn nav-link [uri title page collapsed?]
@@ -45,62 +45,6 @@
 
 
 ;; fdh
-
-(defn pp [derta]
-  (with-out-str (cljs.pprint/pprint derta)))
-
-(defn make-empty-xaction []
-  {:date ""
-   :description ""
-   :amount ""})
-
-(rf/reg-event-db
- :initialize
- (fn [_ _]
-   (.log js/console "here!")
-   {:time (js/Date.)
-    :time-color "#f88"
-    :xaction-editing (make-empty-xaction)
-    :xactions {}
-    :user nil}))
-
-(rf/reg-event-db
- :timer
- (fn [db [_ new-time]]
-   (assoc db :time new-time)))
-
-(rf/reg-event-db
- :xaction-editing-change-description
- (fn [db [_ new-description-value]]
-   ;; (.log js/console (str "new val = " new-description-value))
-   (assoc-in db [:xaction-editing :description] new-description-value)))
-
-(rf/reg-event-db
- :xaction-editing-change-amount
- (fn [db [_ new-amount-value]]
-   (assoc-in db [:xaction-editing :amount] new-amount-value)))
-
-(rf/reg-event-db
- :xaction-editing-change-date
- (fn [db [_ new-date-value]]
-   (assoc-in db [:xaction-editing :date] new-date-value)))
-
-(rf/reg-event-db
- :add-xaction
- (fn [db _]
-   (let [new-id (str (uuid/make-random-uuid))]
-     ;; (.log js/console "db" (pp db))
-     (-> db
-         (assoc-in [:xactions new-id] (merge {:id new-id} (:xaction-editing db)))
-         (assoc :xaction-editing (make-empty-xaction))))))
-
-(rf/reg-event-db
- :login
- (fn [db [_ user]]
-   (.log js/console "logging in user" (pp user))
-   (-> db
-       (assoc :user user)
-       (assoc :page :home))))
 
 
 (defn dispatch-timer-event []
@@ -182,7 +126,7 @@
 (secretary/defroute "/" []
   (let [user @(rf/subscribe [:user])]
     (do
-      (.log js/console "user" (pp user))
+      (.log js/console "user" (utils/pp user))
       (if-not user
         (rf/dispatch [:set-active-page :login])
         ;; (accountant/navigate! "/#/login")
