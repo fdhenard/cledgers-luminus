@@ -2,6 +2,7 @@
   (:require [compojure.core :refer [routes wrap-routes]]
             [cledgers.luminus.layout :refer [error-page]]
             [cledgers.luminus.routes.home :refer [home-routes]]
+            [cledgers.luminus.routes.services :refer [services-routes]]
             [compojure.route :as route]
             [cledgers.luminus.env :refer [defaults]]
             [mount.core :as mount]
@@ -13,13 +14,14 @@
 
 (def app-routes
   (routes
-    (-> #'home-routes
-        (wrap-routes middleware/wrap-csrf)
-        (wrap-routes middleware/wrap-formats))
-    (route/not-found
-      (:body
-        (error-page {:status 404
-                     :title "page not found"})))))
+   (-> #'home-routes
+       (wrap-routes middleware/wrap-csrf)
+       (wrap-routes middleware/wrap-formats))
+   #'services-routes
+   (route/not-found
+    (:body
+     (error-page {:status 404
+                  :title "page not found"})))))
 
 
 (defn app [] (middleware/wrap-base #'app-routes))
