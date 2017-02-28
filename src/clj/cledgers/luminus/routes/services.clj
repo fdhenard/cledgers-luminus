@@ -8,4 +8,4 @@
         (do (log/info (str "request: " (utils/pp request)))
             {:status 200
              }))
-  (POST "/api/bogus/" request (log/info (str "bogus: " request))))
+  (POST "/api/bogus/" request (log/info (str "bogus: " (utils/pp request)))))
