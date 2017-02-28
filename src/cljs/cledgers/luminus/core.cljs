@@ -114,7 +114,8 @@
   {:home #'home-page
    :lum-home #'luminus-home-page
    :about #'about-page
-   :login #'login-page/login-page})
+   ;; :login #'login-page/login-page
+   })
 
 (defn page []
   (let [user @(rf/subscribe [:user])]
@@ -134,6 +135,7 @@
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
+  (.log js/console "home route called")
   (rf/dispatch [:set-active-page :home])
   ;; (let [user @(rf/subscribe [:user])]
   ;;   (do
@@ -147,11 +149,12 @@
   (rf/dispatch [:set-active-page :lum-home]))
 
 (secretary/defroute "/about" []
+  (.log js/console "about route called")
   (rf/dispatch [:set-active-page :about]))
 
-(secretary/defroute "/login" []
-  (.log js/console "login route called")
-  (rf/dispatch [:set-active-page :login]))
+;; (secretary/defroute "/login" []
+;;   (.log js/console "login route called")
+;;   (rf/dispatch [:set-active-page :login]))
 
 
 ;; -------------------------
@@ -165,15 +168,15 @@
         (secretary/dispatch! (.-token event))))
     (.setEnabled true))
 
-  (accountant/configure-navigation!
-    {:nav-handler
-     (fn [path]
-       (.log js/console "accountant navigating to " path)
-       (secretary/dispatch! path))
-     :path-exists?
-     (fn [path]
-       (secretary/locate-route path))})
-  (accountant/dispatch-current!)
+  ;; (accountant/configure-navigation!
+  ;;   {:nav-handler
+  ;;    (fn [path]
+  ;;      (.log js/console "accountant navigating to " path)
+  ;;      (secretary/dispatch! path))
+  ;;    :path-exists?
+  ;;    (fn [path]
+  ;;      (secretary/locate-route path))})
+  ;; (accountant/dispatch-current!)
   )
 
 ;; -------------------------
