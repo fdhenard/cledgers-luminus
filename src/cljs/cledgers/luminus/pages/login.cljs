@@ -3,6 +3,7 @@
 
 
 (defn login [evt]
+  (.log js/console "login is getting called")
   (rf/dispatch [:login {:username "testing"}]))
 
 

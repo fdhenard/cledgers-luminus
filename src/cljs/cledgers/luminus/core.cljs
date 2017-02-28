@@ -69,6 +69,8 @@
    [:div.row>div.col-sm-12
     [:div "Hello world, it is now"]
     [clock]]
+   [:div
+    [:button {:on-click #(rf/dispatch [:logout nil])} "logout"]]
    [:div.row>div.col-sm-12
     [:table.table
      [:thead
@@ -115,25 +117,31 @@
    :login #'login-page/login-page})
 
 (defn page []
-  [:div
-   [navbar]
-   [(pages @(rf/subscribe [:page]))]
-   ;; [:div "page: " @(rf/subscribe [:page])]
-   ])
+  (let [user @(rf/subscribe [:user])]
+    (if-not user
+      [login-page/login-page]
+      [:div
+       [navbar]
+       [(pages @(rf/subscribe [:page]))]
+       [:div.container "dater"
+        [:ul
+         [:li "page: " @(rf/subscribe [:page])]
+         [:li "user: " user]]]
+       ])))
 
 ;; -------------------------
 ;; Routes
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (let [user @(rf/subscribe [:user])]
-    (do
-      (.log js/console "user" (utils/pp user))
-      (if-not user
-        ;; (rf/dispatch [:set-active-page :login])
-        ;; (accountant/navigate! "/#/login")
-        (rf/dispatch [:navigate "/#/login"])
-        (rf/dispatch [:set-active-page :home])))))
+  (rf/dispatch [:set-active-page :home])
+  ;; (let [user @(rf/subscribe [:user])]
+  ;;   (do
+  ;;     (.log js/console "user" (utils/pp user))
+  ;;     (if-not user
+  ;;       (rf/dispatch [:navigate "#/login"])
+  ;;       (rf/dispatch [:set-active-page :home]))))
+  )
 
 (secretary/defroute "/luminus-home" []
   (rf/dispatch [:set-active-page :lum-home]))
@@ -142,6 +150,7 @@
   (rf/dispatch [:set-active-page :about]))
 
 (secretary/defroute "/login" []
+  (.log js/console "login route called")
   (rf/dispatch [:set-active-page :login]))
 
 

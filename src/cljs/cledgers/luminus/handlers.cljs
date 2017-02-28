@@ -14,6 +14,7 @@
 (reg-event-db
   :set-active-page
   (fn [db [_ page]]
+    (.log js/console "setting active page to " page)
     (assoc db :page page)))
 
 (reg-event-db
@@ -86,8 +87,18 @@
    (accountant/navigate! path)
    {}))
 
-(reg-event-fx
+;; (reg-event-fx
+;;  :login-evt
+;;  (fn [cofx [_ user]]
+;;    {:db (assoc (:db cofx) :user user)
+;;     :dispatch [:navigate "#/"]}))
+
+(reg-event-db
  :login
- (fn [cofx [_ user]]
-   {:db (assoc (:db cofx) :user user)
-    :dispatch [:navigate "/"]}))
+ (fn [db [_ user]]
+   (assoc db :user user)))
+
+(reg-event-db
+ :logout
+ (fn [db _]
+   (dissoc db :user)))
