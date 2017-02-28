@@ -5,7 +5,7 @@
 
 (defroutes services-routes
   (POST "/api/login/" request
-        (do (log/info (str "request: " (utils/pp request)))
-            {:status 200
-             }))
+        (do
+          ;; (log/info (str "request: " (utils/pp request)))
+          {:status 200}))
   (POST "/api/bogus/" request (log/info (str "bogus: " (utils/pp request)))))
