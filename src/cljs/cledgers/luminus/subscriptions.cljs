@@ -47,3 +47,8 @@
  :user
  (fn [db _]
    (get db :user)))
+
+;; (reg-sub
+;;  :db
+;;  (fn [db _]
+;;    db))

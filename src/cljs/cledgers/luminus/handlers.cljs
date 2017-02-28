@@ -1,8 +1,10 @@
 (ns cledgers.luminus.handlers
   (:require [cledgers.luminus.db :as db]
-            [re-frame.core :refer [dispatch reg-event-db]]
+            [re-frame.core :refer [dispatch reg-event-db reg-event-fx reg-fx]]
             [cljs-uuid-utils.core :as uuid]
-            [cledgers.luminus.utils :as utils]))
+            [cledgers.luminus.utils :as utils]
+            [accountant.core :as accountant]
+            ))
 
 (reg-event-db
   :initialize-db
@@ -25,15 +27,15 @@
    :description ""
    :amount ""})
 
-(reg-event-db
- :initialize
- (fn [_ _]
-   (.log js/console "here!")
-   {:time (js/Date.)
-    :time-color "#f88"
-    :xaction-editing (make-empty-xaction)
-    :xactions {}
-    :user nil}))
+;; (reg-event-db
+;;  :initialize
+;;  (fn [_ _]
+;;    (.log js/console "here!")
+;;    {:time (js/Date.)
+;;     :time-color "#f88"
+;;     :xaction-editing (make-empty-xaction)
+;;     :xactions {}
+;;     :user nil}))
 
 (reg-event-db
  :timer
@@ -65,10 +67,27 @@
          (assoc-in [:xactions new-id] (merge {:id new-id} (:xaction-editing db)))
          (assoc :xaction-editing (make-empty-xaction))))))
 
-(reg-event-db
+;; (reg-event-db
+;;  :login
+;;  (fn [db [_ user]]
+;;    (.log js/console "logging in user" (utils/pp user))
+;;    (-> db
+;;        (assoc :user user)
+;;        (assoc :page :home))))
+
+;; (reg-fx
+;;  :navigate
+;;  (fn [value]
+;;    (accountant/navigate! value)))
+
+(reg-event-fx
+ :navigate
+ (fn [cofx [_ path]]
+   (accountant/navigate! path)
+   {}))
+
+(reg-event-fx
  :login
- (fn [db [_ user]]
-   (.log js/console "logging in user" (utils/pp user))
-   (-> db
-       (assoc :user user)
-       (assoc :page :home))))
+ (fn [cofx [_ user]]
+   {:db (assoc (:db cofx) :user user)
+    :dispatch [:navigate "/"]}))

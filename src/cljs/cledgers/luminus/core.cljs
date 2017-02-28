@@ -117,7 +117,9 @@
 (defn page []
   [:div
    [navbar]
-   [(pages @(rf/subscribe [:page]))]])
+   [(pages @(rf/subscribe [:page]))]
+   ;; [:div "page: " @(rf/subscribe [:page])]
+   ])
 
 ;; -------------------------
 ;; Routes
@@ -128,8 +130,9 @@
     (do
       (.log js/console "user" (utils/pp user))
       (if-not user
-        (rf/dispatch [:set-active-page :login])
+        ;; (rf/dispatch [:set-active-page :login])
         ;; (accountant/navigate! "/#/login")
+        (rf/dispatch [:navigate "/#/login"])
         (rf/dispatch [:set-active-page :home])))))
 
 (secretary/defroute "/luminus-home" []
@@ -146,20 +149,23 @@
 ;; History
 ;; must be called after routes have been defined
 (defn hook-browser-navigation! []
-  ;; (accountant/configure-navigation!
-  ;;   {:nav-handler
-  ;;    (fn [path]
-  ;;      (secretary/dispatch! path))
-  ;;    :path-exists?
-  ;;    (fn [path]
-  ;;      (secretary/locate-route path))})
-  ;; (accountant/dispatch-current!)
   (doto (History.)
     (events/listen
       HistoryEventType/NAVIGATE
       (fn [event]
         (secretary/dispatch! (.-token event))))
-    (.setEnabled true)))
+    (.setEnabled true))
+
+  (accountant/configure-navigation!
+    {:nav-handler
+     (fn [path]
+       (.log js/console "accountant navigating to " path)
+       (secretary/dispatch! path))
+     :path-exists?
+     (fn [path]
+       (secretary/locate-route path))})
+  (accountant/dispatch-current!)
+  )
 
 ;; -------------------------
 ;; Initialize app
