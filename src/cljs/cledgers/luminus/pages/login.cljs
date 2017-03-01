@@ -20,6 +20,6 @@
                 :value @username
                 :on-change #(reset! username (-> % .-target .-value))}]
        [:input {:type "password"
-                :value (or @passwd "")
+                :value @passwd
                 :on-change #(reset! passwd (-> % .-target .-value))}]
        [:button {:on-click #(login username passwd)} "login"]])))
