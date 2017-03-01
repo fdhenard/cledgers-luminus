@@ -8,7 +8,7 @@
   (.log js/console "logging in")
   (ajax/POST "/api/login/"
              {:params {:username @username :password @password}
-              :error-handler #(.log js/console "error" %)
+              :error-handler #(.log js/console "error" (utils/pp %))
               :handler #(rf/dispatch [:login {:username @username}])}))
 
 (defn login-page []
