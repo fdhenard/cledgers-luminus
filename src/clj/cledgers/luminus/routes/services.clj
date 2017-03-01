@@ -5,7 +5,7 @@
             [cledgers.luminus.db.core :as db]
             [buddy.hashers :as hashers]))
 
-(defroutes services-routes
+(defroutes login-service-route
   (POST "/api/login/" request
         (do
           ;; (log/info (str "request: " (utils/pp {:request request})))
@@ -17,5 +17,7 @@
             (if-not (hashers/check (:password params) (:pass user))
               {:status 403}
               {:status 200
-               :session (assoc session :identity username)}))))
-  (POST "/api/bogus/" request (log/info (str "bogus: " (utils/pp request)))))
+               :session (assoc session :identity username)})))))
+
+(defroutes services-routes
+  (POST "/api/bogus/" request {:status 200}))
