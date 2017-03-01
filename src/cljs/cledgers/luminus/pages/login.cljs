@@ -4,18 +4,12 @@
             [cledgers.luminus.utils :as utils]
             [reagent.core :as r]))
 
-
 (defn login [username password]
-  ;; (.log js/console "login is getting called")
   (.log js/console "logging in")
   (ajax/POST "/api/login/"
              {:params {:username @username :password @password}
               :error-handler #(.log js/console "error" %)
-              :handler #(rf/dispatch [:login {:username @username}])})
-  ;; (rf/dispatch [:login {:username "testing"}])
-  )
-
-(defonce temp-uname "frank")
+              :handler #(rf/dispatch [:login {:username @username}])}))
 
 (defn login-page []
   (let [username (r/atom "")
