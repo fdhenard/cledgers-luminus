@@ -86,8 +86,7 @@
                      :on-change #(rf/dispatch [:xaction-editing-change-date (-> % .-target .-value)])}]]
        [:td [:input {:type "text"
                      :value @(rf/subscribe [:xaction-editing-description])
-                     :on-change #(rf/dispatch [:xaction-editing-change-description (-> % .-target .-value)])
-                     }]]
+                     :on-change #(rf/dispatch [:xaction-editing-change-description (-> % .-target .-value)])}]]
        [:td [:input {:type "text"
                      :value @(rf/subscribe [:xaction-editing-amount])
                      :on-change #(rf/dispatch [:xaction-editing-change-amount (-> % .-target .-value)])}]]
