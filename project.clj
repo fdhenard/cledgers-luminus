@@ -5,7 +5,8 @@
 
   :dependencies [[bouncer "1.0.0"]
                  [buddy "1.3.0"]
-                 [cider/cider-nrepl "0.15.0-SNAPSHOT"]
+                 ;; [cider/cider-nrepl "0.15.0-SNAPSHOT"]
+                 [cider/cider-nrepl "0.14.0"]
                  [cljs-ajax "0.5.8"]
                  [compojure "1.5.2"]
                  [conman "0.6.3"]
