@@ -20,4 +20,5 @@
                :session (assoc session :identity username)})))))
 
 (defroutes services-routes
-  (POST "/api/bogus/" request {:status 200}))
+  (POST "/api/logout/" request {:status 200
+                                :session (dissoc (:session request) :identity)}))

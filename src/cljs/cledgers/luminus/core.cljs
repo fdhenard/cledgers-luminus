@@ -12,7 +12,8 @@
             [cledgers.luminus.subscriptions]
             [cledgers.luminus.pages.login :as login-page]
             [accountant.core :as accountant]
-            [cledgers.luminus.utils :as utils])
+            [cledgers.luminus.utils :as utils]
+            [ajax.core :as ajax])
   (:import goog.History))
 
 (defn nav-link [uri title page collapsed?]
@@ -70,7 +71,11 @@
     [:div "Hello world, it is now"]
     [clock]]
    [:div
-    [:button {:on-click #(rf/dispatch [:logout nil])} "logout"]]
+    [:button
+     {:on-click #(ajax/POST "/api/logout/"
+                            :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
+                            :handler (fn [] (rf/dispatch [:logout nil])))}
+     "logout"]]
    [:div.row>div.col-sm-12
     [:table.table
      [:thead
