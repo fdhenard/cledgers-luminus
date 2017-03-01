@@ -6,7 +6,9 @@
             [compojure.route :as route]
             [cledgers.luminus.env :refer [defaults]]
             [mount.core :as mount]
-            [cledgers.luminus.middleware :as middleware]))
+            [cledgers.luminus.middleware :as middleware]
+            [clojure.tools.logging :as log]
+            [cledgers.luminus.utils :as utils]))
 
 (mount/defstate init-app
                 :start ((or (:init defaults) identity))
@@ -15,6 +17,9 @@
 (def app-routes
   (routes
    (-> #'home-routes
+       (wrap-routes (fn [handler] (fn [request]
+                                    (log/info (str "request: " (utils/pp request)))
+                                    (handler request))))
        (wrap-routes middleware/wrap-csrf)
        (wrap-routes middleware/wrap-formats))
    (-> #'services-routes
