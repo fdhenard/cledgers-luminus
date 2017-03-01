@@ -15,6 +15,10 @@ WHERE id = :id
 SELECT * FROM users
 WHERE id = :id
 
+-- :name get-user-by-uname :? :1
+SELECT * FROM users
+WHERE username = :username
+
 -- :name delete-user! :! :n
 -- :doc delete a user given the id
 DELETE FROM users
