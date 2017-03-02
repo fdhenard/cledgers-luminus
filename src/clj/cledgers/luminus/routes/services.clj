@@ -16,8 +16,10 @@
             (log/info (str "user: " (utils/pp user)))
             (if-not (hashers/check (:password params) (:pass user))
               {:status 403}
-              {:status 200
-               :session (assoc session :identity username)})))))
+              (let [user-res (dissoc user :pass)]
+                {:status 200
+                 :session (assoc session :identity user-res)
+                 :body user-res}))))))
 
 (defroutes services-routes
   (POST "/api/logout/" request {:status 200

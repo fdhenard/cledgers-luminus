@@ -9,7 +9,9 @@
   (ajax/POST "/api/login/"
              {:params {:username @username :password @password}
               :error-handler #(.log js/console "error" (utils/pp %))
-              :handler #(rf/dispatch [:login {:username @username}])}))
+              :handler #(do
+                          ;; (.log js/console "res:" (utils/pp %))
+                          (rf/dispatch [:login %]))}))
 
 (defn login-page []
   (let [username (r/atom "")
