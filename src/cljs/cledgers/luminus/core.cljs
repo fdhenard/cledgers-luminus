@@ -65,6 +65,31 @@
 
 (defonce do-timer (js/setInterval dispatch-timer-event 1000))
 
+(defn empty-xaction [] {:date ""
+                        :description ""
+                        :amount ""})
+
+(defn new-xaction-row []
+  (let [new-xaction (r/atom (empty-xaction))]
+    (fn []
+      [:tr {:key "new-one"}
+       [:td [:input {:type "text"
+                     :value (:date @new-xaction)
+                     :on-change #(swap! new-xaction assoc :date (-> % .-target .-value))}]]
+       [:td [:input {:type "text"
+                     :value (:description @new-xaction)
+                     :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]
+       [:td [:input {:type "text"
+                     :value (:amount @new-xaction)
+                     :on-change #(swap! new-xaction assoc :amount (-> % .-target .-value))}]]
+       [:td [:button
+             {:on-click
+              (fn [evt]
+                (rf/dispatch [:add-xaction @new-xaction])
+                (reset! new-xaction (empty-xaction)))}
+             "Add"]]])))
+
+
 (defn home-page []
   [:div.container
    [:div.row>div.col-sm-12
@@ -85,17 +110,7 @@
        [:th "amount"]
        [:th "controls"]]]
      [:tbody
-      [:tr {:key "new-one"}
-       [:td [:input {:type "text"
-                     :value @(rf/subscribe [:xaction-editing-date])
-                     :on-change #(rf/dispatch [:xaction-editing-change-date (-> % .-target .-value)])}]]
-       [:td [:input {:type "text"
-                     :value @(rf/subscribe [:xaction-editing-description])
-                     :on-change #(rf/dispatch [:xaction-editing-change-description (-> % .-target .-value)])}]]
-       [:td [:input {:type "text"
-                     :value @(rf/subscribe [:xaction-editing-amount])
-                     :on-change #(rf/dispatch [:xaction-editing-change-amount (-> % .-target .-value)])}]]
-       [:td [:button {:on-click (fn [evt] (rf/dispatch [:add-xaction]))} "Add"]]]
+      [new-xaction-row]
       (for [xaction (map #(get % 1) @(rf/subscribe [:xactions]))]
         [:tr {:key (:id xaction)}
          [:td (:date xaction)]

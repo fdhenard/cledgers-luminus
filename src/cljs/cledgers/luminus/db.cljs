@@ -4,7 +4,7 @@
   {:page :home
    :time (js/Date.)
    :time-color "#f88"
-   :xaction-editing nil
+   ;; :xaction-editing nil
    :xactions {}
    :user (js->clj js/user :keywordize-keys true)
    })

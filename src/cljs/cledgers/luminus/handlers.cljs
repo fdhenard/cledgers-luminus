@@ -44,54 +44,20 @@
    (assoc db :time new-time)))
 
 (reg-event-db
- :xaction-editing-change-description
- (fn [db [_ new-description-value]]
-   ;; (.log js/console (str "new val = " new-description-value))
-   (assoc-in db [:xaction-editing :description] new-description-value)))
-
-(reg-event-db
- :xaction-editing-change-amount
- (fn [db [_ new-amount-value]]
-   (assoc-in db [:xaction-editing :amount] new-amount-value)))
-
-(reg-event-db
- :xaction-editing-change-date
- (fn [db [_ new-date-value]]
-   (assoc-in db [:xaction-editing :date] new-date-value)))
-
-(reg-event-db
  :add-xaction
- (fn [db _]
+ (fn [db [_ new-xaction]]
    (let [new-id (str (uuid/make-random-uuid))]
      ;; (.log js/console "db" (utils/pp db))
+     (.log js/console "stuffs:" (utils/pp {:new-id new-id
+                                           :new-xaction new-xaction}))
      (-> db
-         (assoc-in [:xactions new-id] (merge {:id new-id} (:xaction-editing db)))
-         (assoc :xaction-editing (make-empty-xaction))))))
-
-;; (reg-event-db
-;;  :login
-;;  (fn [db [_ user]]
-;;    (.log js/console "logging in user" (utils/pp user))
-;;    (-> db
-;;        (assoc :user user)
-;;        (assoc :page :home))))
-
-;; (reg-fx
-;;  :navigate
-;;  (fn [value]
-;;    (accountant/navigate! value)))
+         (assoc-in [:xactions new-id] (merge {:id new-id} new-xaction))))))
 
 (reg-event-fx
  :navigate
  (fn [cofx [_ path]]
    (accountant/navigate! path)
    {}))
-
-;; (reg-event-fx
-;;  :login-evt
-;;  (fn [cofx [_ user]]
-;;    {:db (assoc (:db cofx) :user user)
-;;     :dispatch [:navigate "#/"]}))
 
 (reg-event-db
  :login
