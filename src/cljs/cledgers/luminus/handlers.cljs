@@ -53,11 +53,11 @@
      (-> db
          (assoc-in [:xactions new-id] (merge {:id new-id} new-xaction))))))
 
-(reg-event-fx
- :navigate
- (fn [cofx [_ path]]
-   (accountant/navigate! path)
-   {}))
+;; (reg-event-fx
+;;  :navigate
+;;  (fn [cofx [_ path]]
+;;    (accountant/navigate! path)
+;;    {}))
 
 (reg-event-db
  :login

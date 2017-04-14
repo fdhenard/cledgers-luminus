@@ -151,6 +151,7 @@
 
 (defn page []
   (let [user @(rf/subscribe [:user])]
+    ;; (.log js/console "user: " (utils/pp user))
     (if-not user
       [login-page/login-page]
       [:div
@@ -197,6 +198,7 @@
     (events/listen
       HistoryEventType/NAVIGATE
       (fn [event]
+        ;; (.log js/console "some kind of navigate event happening: " event)
         (secretary/dispatch! (.-token event))))
     (.setEnabled true))
 
