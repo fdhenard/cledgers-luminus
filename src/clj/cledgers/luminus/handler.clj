@@ -17,15 +17,17 @@
 (def app-routes
   (routes
    (-> #'home-routes
-       (wrap-routes (fn [handler] (fn [request]
-                                    (log/info (str "request: " (utils/pp request)))
-                                    (handler request))))
-       ;; (wrap-routes middleware/wrap-restricted)
+       ;; (wrap-routes (fn [handler] (fn [request]
+       ;;                              (log/info (str "request: " (utils/pp request)))
+       ;;                              (handler request))))
        (wrap-routes middleware/wrap-csrf)
+       ;; (wrap-routes middleware/wrap-restricted)
        (wrap-routes middleware/wrap-formats))
    (-> #'public-service-routes
+       (wrap-routes middleware/wrap-csrf)
        (wrap-routes middleware/wrap-formats))
    (-> #'services-routes
+       (wrap-routes middleware/wrap-csrf)
        (wrap-routes middleware/wrap-restricted)
        (wrap-routes middleware/wrap-formats))
    (route/not-found
