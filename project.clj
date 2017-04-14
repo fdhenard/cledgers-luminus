@@ -23,7 +23,8 @@
                  [org.clojure/tools.logging "0.3.1"]
                  [org.postgresql/postgresql "9.4.1212"]
                  [org.webjars.bower/tether "1.4.0"]
-                 [org.webjars/bootstrap "4.0.0-alpha.5"]
+                 ;; [org.webjars/bootstrap "4.0.0-alpha.5"]
+                 [org.webjars/bootstrap "3.3.7"]
                  [org.webjars/font-awesome "4.7.0"]
                  [org.webjars/webjars-locator-jboss-vfs "0.1.0"]
                  [re-frame "0.9.1"]
@@ -36,7 +37,9 @@
                  [secretary "1.2.3"]
                  [selmer "1.10.6"]
                  [com.lucasbradstreet/cljs-uuid-utils "1.0.2"]
-                 [venantius/accountant "0.1.9"]]
+                 [venantius/accountant "0.1.9"]
+                 [cljsjs/react-bootstrap "0.30.7-0" :exclusions [cljsjs/react cljsjs/bootstrap]]
+                 ]
 
   :min-lein-version "2.0.0"
 

@@ -13,7 +13,8 @@
             [cledgers.luminus.pages.login :as login-page]
             [accountant.core :as accountant]
             [cledgers.luminus.utils :as utils]
-            [ajax.core :as ajax])
+            [ajax.core :as ajax]
+            [cledgers.luminus.bootstrap :as bs])
   (:import goog.History))
 
 (defn nav-link [uri title page collapsed?]
@@ -24,17 +25,35 @@
       {:href uri
        :on-click #(reset! collapsed? true)} title]]))
 
+;; (defn navbar []
+;;   (r/with-let [collapsed? (r/atom true)]
+;;     [:nav.navbar.navbar-dark.bg-primary
+;;      [:button.navbar-toggler.hidden-sm-up
+;;       {:on-click #(swap! collapsed? not)} "☰"]
+;;      [:div.collapse.navbar-toggleable-xs
+;;       (when-not @collapsed? {:class "in"})
+;;       [:a.navbar-brand {:href "#/"} "cledgers.luminus"]
+;;       [:ul.nav.navbar-nav
+;;        [nav-link "#/" "Home" :home collapsed?]
+;;        [nav-link "#/about" "About" :about collapsed?]]]]))
+
 (defn navbar []
-  (r/with-let [collapsed? (r/atom true)]
-    [:nav.navbar.navbar-dark.bg-primary
-     [:button.navbar-toggler.hidden-sm-up
-      {:on-click #(swap! collapsed? not)} "☰"]
-     [:div.collapse.navbar-toggleable-xs
-      (when-not @collapsed? {:class "in"})
-      [:a.navbar-brand {:href "#/"} "cledgers.luminus"]
-      [:ul.nav.navbar-nav
-       [nav-link "#/" "Home" :home collapsed?]
-       [nav-link "#/about" "About" :about collapsed?]]]]))
+  [bs/Navbar {:class "navbar-inverse"}
+   [bs/Navbar.Header
+    [bs/Navbar.Brand
+     [:a {:href "#"} "disreguard"]]
+    [bs/Navbar.Toggle]]
+   [bs/Navbar.Collapse
+    [bs/Nav
+     [bs/NavItem {:href "#/"} "Home"]
+     [bs/NavItem {:href "#/about"} "About"]
+     [bs/NavDropdown {:title "User" :id "user-dropdown"}
+      [bs/MenuItem
+       {:on-click #(ajax/POST "/api/logout/"
+                              :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
+                              :handler (fn [] (rf/dispatch [:logout nil])))}
+       "Logout"]]]]])
+
 
 (defn about-page []
   [:div.container
