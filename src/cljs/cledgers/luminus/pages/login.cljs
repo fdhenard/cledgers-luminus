@@ -17,20 +17,23 @@
   (let [username (r/atom "")
         passwd (r/atom "")]
     (fn []
-      [:div.panel.panel-default
-       [:div.panel-body
-        [:div.form-group
-         [:label {:for "username"} "Username"]
-         [:input.form-control {:type "text"
-                               :value @username
-                               :on-change #(reset! username (-> % .-target .-value))
-                               :id "username"}]
-         [:label {:for "password"} "Password"]
-         [:input.form-control {:type "password"
-                               :value @passwd
-                               :on-change #(reset! passwd (-> % .-target .-value))
-                               :id "password"}]]
-        [:button.btn.btn-primary {:on-click #(login username passwd)} "login"]]]
+      [:div.container
+       [:div.row
+        [:div.col-md-6.col-md-offset-3
+         [:div.panel.panel-default
+          [:div.panel-body
+           [:div.form-group
+            [:label {:for "username"} "Username"]
+            [:input.form-control {:type "text"
+                                  :value @username
+                                  :on-change #(reset! username (-> % .-target .-value))
+                                  :id "username"}]
+            [:label {:for "password"} "Password"]
+            [:input.form-control {:type "password"
+                                  :value @passwd
+                                  :on-change #(reset! passwd (-> % .-target .-value))
+                                  :id "password"}]]
+           [:button.btn.btn-primary {:on-click #(login username passwd)} "login"]]]]]]
       ;; [:div.container
       ;;  [:input {:type "text"
       ;;           :value @username
