@@ -2,7 +2,7 @@
   (:require [compojure.core :refer [routes wrap-routes]]
             [cledgers.luminus.layout :refer [error-page]]
             [cledgers.luminus.routes.home :refer [home-routes]]
-            [cledgers.luminus.routes.services :refer [login-service-route services-routes]]
+            [cledgers.luminus.routes.services :refer [public-service-routes services-routes]]
             [compojure.route :as route]
             [cledgers.luminus.env :refer [defaults]]
             [mount.core :as mount]
@@ -23,7 +23,7 @@
        ;; (wrap-routes middleware/wrap-restricted)
        (wrap-routes middleware/wrap-csrf)
        (wrap-routes middleware/wrap-formats))
-   (-> #'login-service-route
+   (-> #'public-service-routes
        (wrap-routes middleware/wrap-formats))
    (-> #'services-routes
        (wrap-routes middleware/wrap-restricted)

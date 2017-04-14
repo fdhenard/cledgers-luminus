@@ -5,7 +5,7 @@
             [cledgers.luminus.db.core :as db]
             [buddy.hashers :as hashers]))
 
-(defroutes login-service-route
+(defroutes public-service-routes
   (POST "/api/login/" request
         (do
           ;; (log/info (str "request: " (utils/pp {:request request})))
