@@ -114,12 +114,6 @@
    [:div.row>div.col-sm-12
     [:div "Hello world, it is now"]
     [clock]]
-   [:div
-    [:button
-     {:on-click #(ajax/POST "/api/logout/"
-                            :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
-                            :handler (fn [] (rf/dispatch [:logout nil])))}
-     "logout"]]
    [:div.row>div.col-sm-12
     [:table.table
      [:thead
