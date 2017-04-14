@@ -41,7 +41,7 @@
   [bs/Navbar {:class "navbar-inverse"}
    [bs/Navbar.Header
     [bs/Navbar.Brand
-     [:a {:href "#"} "disreguard"]]
+     [:a {:href "#"} "cledgers.luminus"]]
     [bs/Navbar.Toggle]]
    [bs/Navbar.Collapse
     [bs/Nav
