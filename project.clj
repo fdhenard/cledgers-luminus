@@ -1,4 +1,4 @@
-(defproject cledgers.luminus "0.1.0-SNAPSHOT"
+(defproject cledgers-luminus "0.1.0-SNAPSHOT"
 
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
@@ -47,7 +47,7 @@
   :source-paths ["src/clj" "src/cljc"]
   :resource-paths ["resources" "target/cljsbuild"]
   :target-path "target/%s/"
-  :main cledgers.luminus.core
+  :main cledgers-luminus.core
   :migratus {:store :database :db ~(get (System/getenv) "DATABASE_URL")}
 
   :plugins [[lein-cprop "1.0.1"]
@@ -81,7 +81,7 @@
              
              
              :aot :all
-             :uberjar-name "cledgers.luminus.jar"
+             :uberjar-name "cledgers-luminus.jar"
              :source-paths ["env/prod/clj"]
              :resource-paths ["env/prod/resources"]}
 
@@ -105,7 +105,7 @@
                    {:app
                     {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
                      :compiler
-                     {:main "cledgers.luminus.app"
+                     {:main "cledgers-luminus.app"
                       :asset-path "/js/out"
                       :output-to "target/cljsbuild/public/js/app.js"
                       :output-dir "target/cljsbuild/public/js/out"
@@ -128,7 +128,7 @@
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
                      :compiler
                      {:output-to "target/test.js"
-                      :main "cledgers.luminus.doo-runner"
+                      :main "cledgers-luminus.doo-runner"
                       :optimizations :whitespace
                       :pretty-print true}}}}
                   

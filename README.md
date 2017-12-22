@@ -1,4 +1,4 @@
-# cledgers.luminus
+# cledgers-luminus
 
 generated using Luminus version "2.9.11.32"
 
