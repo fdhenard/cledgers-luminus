@@ -12,6 +12,16 @@ You will need [Leiningen][1] 2.0 or above installed.
 
 ## Running
 
+### In emacs (cider)
+
+- in terminal
+    - `$ lein figwheel`
+- in emacs
+    - `M-x <ret> cider-jack-in`
+    - `user> (mount/start)`
+
+### In console
+
 To start a web server for the application, run:
 
     lein run
