@@ -7,7 +7,9 @@
             [cider.nrepl :refer [cider-nrepl-handler]]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.tools.logging :as log]
-            [mount.core :as mount])
+            [mount.core :as mount]
+            [declarative-ddl.migrator.core :as migrator]
+            [cledgers-luminus.entities :as entities])
   (:gen-class))
 
 (def cli-options
@@ -49,11 +51,20 @@
 
 (defn -main [& args]
   (cond
-    (some #{"migrate" "rollback"} args)
+    ;; (some #{"migrate" "rollback"} args)
+    ;; (do
+    ;;   (mount/start #'cledgers-luminus.config/env)
+    ;;   (migrations/migrate args (select-keys env [:database-url]))
+    ;;   (System/exit 0))
+    (some #{"make-migration"} args)
+    (do
+      ;; (mount/start #'cledgers-luminus.config/env)
+      (migrator/make-migration-file! entities/entities)
+      (System/exit 0))
+    (some #{"migrate"} args)
     (do
       (mount/start #'cledgers-luminus.config/env)
-      (migrations/migrate args (select-keys env [:database-url]))
-      (System/exit 0))
+      (migrator/migrate! (:database-url env)))
     :else
     (start-app args)))
   

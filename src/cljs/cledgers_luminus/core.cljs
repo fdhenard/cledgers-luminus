@@ -39,11 +39,11 @@
 
 (defn navbar []
   [bs/Navbar {:class "navbar-inverse"}
-   [bs/Navbar.Header
-    [bs/Navbar.Brand
+   [bs/NavbarHeader
+    [bs/NavbarBrand
      [:a {:href "#"} "cledgers-luminus"]]
-    [bs/Navbar.Toggle]]
-   [bs/Navbar.Collapse
+    [bs/NavbarToggle]]
+   [bs/NavbarCollapse
     [bs/Nav
      [bs/NavItem {:href "#/"} "Home"]
      [bs/NavItem {:href "#/about"} "About"]
