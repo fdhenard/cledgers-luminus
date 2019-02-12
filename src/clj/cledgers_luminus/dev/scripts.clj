@@ -11,6 +11,6 @@
                     :first_name first-name
                     :last_name last-name
                     :email email
-                    :admin is-admin?
+                    :is_admin is-admin?
                     :is_active is-active?
                     :pass (hashers/derive pass)}))

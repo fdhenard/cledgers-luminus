@@ -14,7 +14,10 @@
             [accountant.core :as accountant]
             [cledgers-luminus.utils :as utils]
             [ajax.core :as ajax]
-            [cledgers-luminus.bootstrap :as bs])
+            ;; [cledgers-luminus.bootstrap :as bs]
+            ;; cljsjs.react-bootstrap
+            ;; ["react-boostrap" :as bs]
+            )
   (:import goog.History))
 
 (defn nav-link [uri title page collapsed?]
@@ -37,22 +40,45 @@
 ;;        [nav-link "#/" "Home" :home collapsed?]
 ;;        [nav-link "#/about" "About" :about collapsed?]]]]))
 
+;; (defn navbar []
+;;   [bs/Navbar {:class "navbar-inverse"}
+;;    [bs/NavbarHeader
+;;     [bs/NavbarBrand
+;;      [:a {:href "#"} "cledgers-luminus"]]
+;;     [bs/NavbarToggle]]
+;;    [bs/NavbarCollapse
+;;     [bs/Nav
+;;      [bs/NavItem {:href "#/"} "Home"]
+;;      [bs/NavItem {:href "#/about"} "About"]
+;;      [bs/NavDropdown {:title "User" :id "user-dropdown"}
+;;       [bs/MenuItem
+;;        {:on-click #(ajax/POST "/api/logout/"
+;;                               :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
+;;                               :handler (fn [] (rf/dispatch [:logout nil])))}
+;;        "Logout"]]]]])
+
 (defn navbar []
-  [bs/Navbar {:class "navbar-inverse"}
-   [bs/NavbarHeader
-    [bs/NavbarBrand
-     [:a {:href "#"} "cledgers-luminus"]]
-    [bs/NavbarToggle]]
-   [bs/NavbarCollapse
-    [bs/Nav
-     [bs/NavItem {:href "#/"} "Home"]
-     [bs/NavItem {:href "#/about"} "About"]
-     [bs/NavDropdown {:title "User" :id "user-dropdown"}
-      [bs/MenuItem
-       {:on-click #(ajax/POST "/api/logout/"
-                              :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
-                              :handler (fn [] (rf/dispatch [:logout nil])))}
-       "Logout"]]]]])
+  [:div "hi"]
+  ;; [:> bs/Navbar
+  ;;  [:> bs/Navbar.Brand "testing"]]
+  ;; [bs/Navbar
+  ;;  [bs/NavbarBrand "hi"]]
+  ;; [:div "hi"]
+  ;; [bs/Navbar
+  ;;  [bs/NavbarToggle {:aria-controls "basic-navbar-nav"}]
+  ;;  [bs/NavbarBrand
+  ;;   [:a {:href "#"} "cledgers-luminus stankwhat"]]
+  ;;  [bs/NavbarCollapse
+  ;;   [bs/Nav
+  ;;    [bs/NavLink {:href "#/"} "Home"]
+  ;;    [bs/NavLink {:href "#/about"} "About"]
+  ;;    [bs/NavDropdown {:title "User" :id "user-dropdown"}
+  ;;     [bs/NavDropdownItem
+  ;;      {:on-click #(ajax/POST "/api/logout/"
+  ;;                             :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
+  ;;                             :handler (fn [] (rf/dispatch [:logout nil])))}
+  ;;      "Logout"]]]]]
+  )
 
 
 (defn about-page []

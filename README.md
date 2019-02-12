@@ -10,6 +10,22 @@ You will need [Leiningen][1] 2.0 or above installed.
 
 [1]: https://github.com/technomancy/leiningen
 
+## Dev Prerequisites
+
+- Java 11
+- [Leiningen][1] 2.0 or above installed.
+- db setup
+    - postgresql installed
+    - PSQL - `> create role cledgers_luminus with createdb login;`
+    - `$ createdb cledgers_luminus -O cledgers_luminus`
+    - run migrations
+        - `$ lein run migrate`
+    - insert self as user
+        - in repl
+            - compile `cledgers_luminus.dev.scripts`
+            - `> (cledgers_luminus.dev.scripts/create-user-s! :username "frank" :last-name "Henard" :first-name "Frank" :email "fdhenard@gmail.com" :password "tanky" :is-admin? true :is-active? true)`
+
+
 ## Running
 
 ### In emacs (cider)

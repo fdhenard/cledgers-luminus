@@ -64,7 +64,8 @@
     (some #{"migrate"} args)
     (do
       (mount/start #'cledgers-luminus.config/env)
-      (migrator/migrate! (:database-url env)))
+      (migrator/migrate! (:database-url env))
+      (System/exit 0))
     :else
     (start-app args)))
   
