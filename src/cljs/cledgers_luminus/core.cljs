@@ -58,7 +58,26 @@
 ;;        "Logout"]]]]])
 
 (defn navbar []
-  [:div "hi"]
+  [:nav.navbar {:role "navigation" :aria-label "main navigation"}
+   [:div.navbar-brand
+    [:div.navbar-item "cledgers-luminus"]
+    [:a {:role "button" :class "navbar-burger burger" :aria-label "menu" :aria-expanded "false" :data-target "navbar-thing"}
+     [:span {:aria-hidden true}]
+     [:span {:aria-hidden true}]
+     [:span {:aria-hidden true}]]]
+   [:div.navbar-menu {:id "navbar-thing"}
+
+    [:div.navbar-start
+     [:div {:class "navbar-item has-dropdown is-hoverable"}
+      [:a.navbar-link "User"]
+      [:div.navbar-dropdown
+       [:div.navbar-item
+        {:on-click #(ajax/POST "/api/logout/"
+                              :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
+                              :handler (fn [] (rf/dispatch [:logout nil])))}
+       "Logout"
+        ]]]]]]
+
   ;; [:> bs/Navbar
   ;;  [:> bs/Navbar.Brand "testing"]]
   ;; [bs/Navbar
