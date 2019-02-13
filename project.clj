@@ -26,7 +26,7 @@
                  [org.webjars/bootstrap "4.2.1"]
                  [org.webjars.npm/bulma "0.7.4"]
                  ;; [org.webjars/bootstrap "4.2.1"]
-                 [org.webjars/font-awesome "5.7.1"]
+                 ;; [org.webjars/font-awesome "5.7.1"]
                  [org.webjars/webjars-locator-jboss-vfs "0.1.0"]
                  [re-frame "0.10.6"]
                  [reagent "0.8.1"]
