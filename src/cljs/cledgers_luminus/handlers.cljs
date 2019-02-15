@@ -4,6 +4,7 @@
             [cljs-uuid-utils.core :as uuid]
             [cledgers-luminus.utils :as utils]
             [accountant.core :as accountant]
+            [ajax.core :as ajax]
             ))
 
 (reg-event-db
@@ -50,8 +51,13 @@
      ;; (.log js/console "db" (utils/pp db))
      (.log js/console "stuffs:" (utils/pp {:new-id new-id
                                            :new-xaction new-xaction}))
-     (-> db
-         (assoc-in [:xactions new-id] (merge {:id new-id} new-xaction))))))
+     (let [reframe-res (-> db
+                           (assoc-in [:xactions new-id] (merge {:id new-id} new-xaction)))]
+       (ajax/POST "/api/xactions/"
+                  {:params {:xaction new-xaction}
+                   :error-handler (fn [err] (.log js/console "error: " (utils/pp err)))
+                   :handler (fn [] (.log js/console "yay???"))})
+       reframe-res))))
 
 ;; (reg-event-fx
 ;;  :navigate

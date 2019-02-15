@@ -26,4 +26,20 @@
                          {:name "pass"
                           :type :character
                           :max-length 300}
-                         ]}])
+                         ]}
+               {:name "xaction"
+                :fields [{:name "description"
+                          :type :character
+                          :max-length 250}
+                         {:name "amount"
+                          :type :numeric
+                          :total-length 10
+                          :decimal-places 2}
+                         {:name "date"
+                          :type :date}
+                         {:name "time-created"
+                          :type :date-time
+                          :default :current-time}
+                         {:name "created-by"
+                          :type :foreign-key
+                          :references :cledgers-user}]}])

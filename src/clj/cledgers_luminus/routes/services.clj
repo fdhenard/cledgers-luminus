@@ -3,7 +3,8 @@
             [clojure.tools.logging :as log]
             [cledgers-luminus.utils :as utils]
             [cledgers-luminus.db.core :as db]
-            [buddy.hashers :as hashers]))
+            [buddy.hashers :as hashers]
+            [clojure.java.jdbc :as jdbc]))
 
 (defroutes public-service-routes
   (POST "/api/login/" request
@@ -13,7 +14,7 @@
                 username (-> params :username)
                 user (db/get-user-by-uname {:username username})
                 session (-> request :session)]
-            (log/info (str "user: " (utils/pp user)))
+            ;; (log/info (str "user: " (utils/pp user)))
             (if-not (hashers/check (:password params) (:pass user))
               {:status 403}
               (let [user-res (dissoc user :pass)]
@@ -23,4 +24,10 @@
 
 (defroutes services-routes
   (POST "/api/logout/" request {:status 200
-                                :session (dissoc (:session request) :identity)}))
+                                :session (dissoc (:session request) :identity)})
+  (POST "/api/xactions/" request
+        (do
+          (log/info (str "xactions post request: " (utils/pp {:request request})))
+          (jdbc/insert! db/*db* :xaction (:params request))
+          {:status 200}
+          )))
