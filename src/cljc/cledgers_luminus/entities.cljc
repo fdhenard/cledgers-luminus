@@ -28,7 +28,11 @@
                           :max-length 300}
                          ]}
                {:name "xaction"
-                :fields [{:name "description"
+                :fields [{:name "uuid"
+                          :type :character
+                          :max-length 100
+                          :unique true}
+                         {:name "description"
                           :type :character
                           :max-length 250}
                          {:name "amount"

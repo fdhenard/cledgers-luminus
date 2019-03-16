@@ -67,3 +67,6 @@ body {
     }
 }
 
+tr.rowhighlight {
+    background-color: #83f442;
+}

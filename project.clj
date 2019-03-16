@@ -41,6 +41,8 @@
                  [venantius/accountant "0.2.4"]
                  ;; [cljsjs/react-bootstrap "0.32.4-0" :exclusions [cljsjs/react cljsjs/bootstrap]]
                  [declarative-ddl "0.1.1-SNAPSHOT"]
+                 [com.andrewmcveigh/cljs-time "0.5.2"]
+                 [clojure.java-time "0.3.2"]
                  ]
 
   :min-lein-version "2.0.0"

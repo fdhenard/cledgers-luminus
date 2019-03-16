@@ -44,20 +44,20 @@
  (fn [db [_ new-time]]
    (assoc db :time new-time)))
 
-(reg-event-db
- :add-xaction
- (fn [db [_ new-xaction]]
-   (let [new-id (str (uuid/make-random-uuid))]
-     ;; (.log js/console "db" (utils/pp db))
-     (.log js/console "stuffs:" (utils/pp {:new-id new-id
-                                           :new-xaction new-xaction}))
-     (let [reframe-res (-> db
-                           (assoc-in [:xactions new-id] (merge {:id new-id} new-xaction)))]
-       (ajax/POST "/api/xactions/"
-                  {:params {:xaction new-xaction}
-                   :error-handler (fn [err] (.log js/console "error: " (utils/pp err)))
-                   :handler (fn [] (.log js/console "yay???"))})
-       reframe-res))))
+;; (reg-event-db
+;;  :add-xaction
+;;  (fn [db [_ new-xaction]]
+;;    (let [new-id (str (uuid/make-random-uuid))]
+;;      ;; (.log js/console "db" (utils/pp db))
+;;      (.log js/console "stuffs:" (utils/pp {:new-id new-id
+;;                                            :new-xaction new-xaction}))
+;;      (let [reframe-res (-> db
+;;                            (assoc-in [:xactions new-id] (merge {:id new-id} new-xaction)))]
+;;        (ajax/POST "/api/xactions/"
+;;                   {:params {:xaction new-xaction}
+;;                    :error-handler (fn [err] (.log js/console "error: " (utils/pp err)))
+;;                    :handler (fn [] (.log js/console "yay???"))})
+;;        reframe-res))))
 
 ;; (reg-event-fx
 ;;  :navigate

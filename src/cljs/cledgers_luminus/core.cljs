@@ -17,6 +17,8 @@
             ;; [cledgers-luminus.bootstrap :as bs]
             ;; cljsjs.react-bootstrap
             ;; ["react-boostrap" :as bs]
+            [cljs-uuid-utils.core :as uuid]
+            [cljs-time.core :as time]
             )
   (:import goog.History))
 
@@ -129,17 +131,41 @@
 
 (defonce do-timer (js/setInterval dispatch-timer-event 1000))
 
-(defn empty-xaction [] {:date ""
+(def last-date-used (atom (time/today)))
+
+(defn empty-xaction [] {:uuid (str (uuid/make-random-uuid))
+                        :date {:month (time/month @last-date-used)
+                               :day (time/day @last-date-used)
+                               :year (time/year @last-date-used)}
                         :description ""
-                        :amount ""})
+                        :amount ""
+                        :add-waiting true})
+
+(def xactions (r/atom {}))
+
+(defn xform-xaction-for-backend [xaction]
+  (as-> xaction $
+    (dissoc $ :add-waiting)))
 
 (defn new-xaction-row []
   (let [new-xaction (r/atom (empty-xaction))]
     (fn []
       [:tr {:key "new-one"}
-       [:td [:input {:type "text"
-                     :value (:date @new-xaction)
-                     :on-change #(swap! new-xaction assoc :date (-> % .-target .-value))}]]
+       [:td
+        [:input {:type "text"
+                 :size 2
+                 :value (get-in @new-xaction [:date :month])
+                 :on-change #(swap! new-xaction assoc-in [:date :month] (-> % .-target .-value))}]
+        [:span "/"]
+        [:input {:type "text"
+                 :size 2
+                 :value (get-in @new-xaction [:date :day])
+                 :on-change #(swap! new-xaction assoc-in [:date :day] (-> % .-target .-value))}]
+        [:span "/"]
+        [:input {:type "text"
+                 :size 4
+                 :value (get-in @new-xaction [:date :year])
+                 :on-change #(swap! new-xaction assoc-in [:date :year] (-> % .-target .-value))}]]
        [:td [:input {:type "text"
                      :value (:description @new-xaction)
                      :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]
@@ -149,8 +175,26 @@
        [:td [:button
              {:on-click
               (fn [evt]
-                (rf/dispatch [:add-xaction @new-xaction])
-                (reset! new-xaction (empty-xaction)))}
+                (let [xaction-to-add @new-xaction]
+                  (reset! last-date-used (time/local-date
+                                          (js/parseInt (get-in @new-xaction [:date :year]))
+                                          (js/parseInt (get-in @new-xaction [:date :month]))
+                                          (js/parseInt (get-in @new-xaction [:date :day]))))
+                  (swap! xactions assoc (:uuid xaction-to-add) xaction-to-add)
+                  (reset! new-xaction (empty-xaction))
+                  ;; (.log js/console "new-xaction: " (utils/pp xaction-to-add))
+                  (ajax/POST "/api/xactions/"
+                             {:params {:xaction (xform-xaction-for-backend xaction-to-add)}
+                              :error-handler
+                              (fn [err]
+                                (.log js/console "error: " (utils/pp err))
+                                ;; (.log js/console "xactions before dissoc: " (utils/pp @xactions))
+                                (swap! xactions dissoc (:uuid xaction-to-add))
+                                ;; (.log js/console "xactions after dissoc: " (utils/pp @xactions))
+                                )
+                              :handler
+                              (fn [] (.log js/console "yay???"))})))
+              }
              "Add"]]])))
 
 
@@ -169,11 +213,15 @@
        [:th "controls"]]]
      [:tbody
       [new-xaction-row]
-      (for [xaction (map #(get % 1) @(rf/subscribe [:xactions]))]
-        [:tr {:key (:id xaction)}
-         [:td (:date xaction)]
-         [:td (:description xaction)]
-         [:td (:amount xaction)]])]]]])
+      (for [[_ xaction] @xactions]
+        (let [;; _ (.log js/console "xaction: " (utils/pp xaction))
+              class (when (:add-waiting xaction)
+                      "rowhighlight")]
+          [:tr {:key (:id xaction)
+                :class class}
+           [:td (:date xaction)]
+           [:td (:description xaction)]
+           [:td (:amount xaction)]]))]]]])
 
 
 

@@ -23,3 +23,9 @@ WHERE username = :username
 -- :doc delete a user given the id
 DELETE FROM cledgers_user
 WHERE id = :id
+
+-- :name create-xaction! :! :n
+-- :doc creates a new xaction
+INSERT INTO xaction
+(description, amount, date, created_by_id, uuid)
+VALUES (:description, :amount, :date, :created-by-id, :uuid)

@@ -9,7 +9,8 @@
             [clojure.tools.logging :as log]
             [mount.core :as mount]
             [declarative-ddl.migrator.core :as migrator]
-            [cledgers-luminus.entities :as entities])
+            [cledgers-luminus.entities :as entities]
+            [clojure.tools.cli :as cli])
   (:gen-class))
 
 (def cli-options
@@ -49,23 +50,24 @@
     (log/info component "started"))
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
 
+(def cli-options
+  [[nil "--dry-run" "Dry Run"]])
+
 (defn -main [& args]
-  (cond
-    ;; (some #{"migrate" "rollback"} args)
-    ;; (do
-    ;;   (mount/start #'cledgers-luminus.config/env)
-    ;;   (migrations/migrate args (select-keys env [:database-url]))
-    ;;   (System/exit 0))
-    (some #{"make-migration"} args)
-    (do
-      ;; (mount/start #'cledgers-luminus.config/env)
-      (migrator/make-migration-file! entities/entities)
-      (System/exit 0))
-    (some #{"migrate"} args)
-    (do
-      (mount/start #'cledgers-luminus.config/env)
-      (migrator/migrate! (:database-url env))
-      (System/exit 0))
-    :else
-    (start-app args)))
+  (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)]
+    (if (and (= 1 (count arguments))
+             (#{"make-migration" "migrate"} (first arguments)))
+      (let [action (first arguments)]
+        (case action
+          "make-migration"
+          (do
+            ;; (mount/start #'cledgers-luminus.config/env)
+            (migrator/make-migration-file! entities/entities)
+            (System/exit 0))
+          "migrate"
+          (do
+            (mount/start #'cledgers-luminus.config/env)
+            (migrator/migrate! (:database-url env) :dry-run (:dry-run options))
+            (System/exit 0))))
+     (start-app args))))
   

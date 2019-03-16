@@ -4,7 +4,8 @@
             [cledgers-luminus.utils :as utils]
             [cledgers-luminus.db.core :as db]
             [buddy.hashers :as hashers]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc]
+            [java-time :as time]))
 
 (defroutes public-service-routes
   (POST "/api/login/" request
@@ -26,8 +27,17 @@
   (POST "/api/logout/" request {:status 200
                                 :session (dissoc (:session request) :identity)})
   (POST "/api/xactions/" request
-        (do
-          (log/info (str "xactions post request: " (utils/pp {:request request})))
-          (jdbc/insert! db/*db* :xaction (:params request))
-          {:status 200}
-          )))
+        (let [xaction (-> request :params :xaction)
+              new-date (time/local-date
+                        (get-in xaction [:date :year])
+                        (get-in xaction [:date :month])
+                        (get-in xaction [:date :day]))
+              updated-xaction (-> xaction
+                                  (assoc :date new-date)
+                                  (assoc :amount (-> xaction :amount bigdec))
+                                  (assoc :created-by-id (get-in request [:session :identity :id])))
+              _ (println "new-xaction:" (utils/pp updated-xaction))]
+          (log/info (str "xactions post request:\n" (utils/pp {:request request})))
+          ;; (jdbc/insert! db/*db* :xaction updated-xaction)
+          (db/create-xaction! updated-xaction)
+          {:status 200})))

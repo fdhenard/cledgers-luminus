@@ -1,0 +1,7 @@
+{:keys-missing-in-1
+ [{:path [:xaction :fields :uuid],
+   :value
+   {:name "uuid", :type :character, :max-length 100, :unique true}}],
+ :keys-missing-in-2 [],
+ :value-differences [],
+ :dal-version "2.2.6"}
