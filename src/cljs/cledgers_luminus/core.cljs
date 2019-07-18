@@ -19,8 +19,18 @@
             ;; ["react-boostrap" :as bs]
             [cljs-uuid-utils.core :as uuid]
             [cljs-time.core :as time]
+            ;; [declarative-ddl.something :as dddl-ents-var]
+            [declarative-ddl.entities-var-alpha :as dddl-ents-var]
+            [cledgers-luminus.entities :as ents]
+            [clojure.spec.alpha :as spec]
+            [declarative-ddl.validation.core :as dddl-validation]
+            [re-com.typeahead :as rc-ta]
+            [komponentit.autocomplete :as autocomplete]
+            [cljsjs.react-select]
             )
   (:import goog.History))
+
+(dddl-ents-var/set-entities! ents/entities)
 
 ;; (defn nav-link [uri title page collapsed?]
 ;;   (let [selected-page (rf/subscribe [:page])]
@@ -139,7 +149,8 @@
                                :year (time/year @last-date-used)}
                         :description ""
                         :amount ""
-                        :add-waiting true})
+                        :add-waiting true
+                        :payee nil})
 
 (def xactions (r/atom {}))
 
@@ -147,55 +158,282 @@
   (as-> xaction $
     (dissoc $ :add-waiting)))
 
-(defn new-xaction-row []
-  (let [new-xaction (r/atom (empty-xaction))]
+(def amount-spec (dddl-validation/get-spec :xaction :amount))
+;; (.log js/console (str "amount-spec:\n" (utils/pp amount-spec)))
+
+;; (defn payee-typeahead-cb [suggestions]
+;;   (.log js/console "suggestions" (str suggestions)))
+
+;; (defn payee-suggestions [query]
+;;   (ajax/GET "/api/payees"
+;;             {:params {:q query}
+;;              }))
+
+(defn payee-typeahead-recom [new-xaction]
+  (let [_ (.log js/console "rendering payee typeahead")
+        _ (.log js/console (utils/pp (:payee @new-xaction)))
+        ;; payee-model (r/atom nil)
+        ;; _ (add-watch
+        ;;    payee-model
+        ;;    :nunya
+        ;;    (fn [key _ old-state new-state]
+        ;;      (.log js/console (str "payee-model changed, old\n" (utils/pp old-state)
+        ;;                            ", new:\n" (utils/pp new-state)))))
+            payee-on-change-value (r/atom (:payee @new-xaction))
+            _ (add-watch
+               payee-on-change-value
+               :nunya
+               (fn [key _ old-state new-state]
+                 (do
+                   (.log js/console (str "payee-on-change-value changed, old\n"
+                                         (utils/pp old-state)
+                                         ", new:\n" (utils/pp new-state)))
+                   (swap! new-xaction assoc :payee new-state)
+                   )))
+        ]
     (fn []
-      [:tr {:key "new-one"}
-       [:td
-        [:input {:type "text"
-                 :size 2
-                 :value (get-in @new-xaction [:date :month])
-                 :on-change #(swap! new-xaction assoc-in [:date :month] (-> % .-target .-value))}]
-        [:span "/"]
-        [:input {:type "text"
-                 :size 2
-                 :value (get-in @new-xaction [:date :day])
-                 :on-change #(swap! new-xaction assoc-in [:date :day] (-> % .-target .-value))}]
-        [:span "/"]
-        [:input {:type "text"
-                 :size 4
-                 :value (get-in @new-xaction [:date :year])
-                 :on-change #(swap! new-xaction assoc-in [:date :year] (-> % .-target .-value))}]]
-       [:td [:input {:type "text"
-                     :value (:description @new-xaction)
-                     :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]
-       [:td [:input {:type "text"
-                     :value (:amount @new-xaction)
-                     :on-change #(swap! new-xaction assoc :amount (-> % .-target .-value))}]]
-       [:td [:button
-             {:on-click
-              (fn [evt]
-                (let [xaction-to-add @new-xaction]
-                  (reset! last-date-used (time/local-date
-                                          (js/parseInt (get-in @new-xaction [:date :year]))
-                                          (js/parseInt (get-in @new-xaction [:date :month]))
-                                          (js/parseInt (get-in @new-xaction [:date :day]))))
-                  (swap! xactions assoc (:uuid xaction-to-add) xaction-to-add)
-                  (reset! new-xaction (empty-xaction))
-                  ;; (.log js/console "new-xaction: " (utils/pp xaction-to-add))
-                  (ajax/POST "/api/xactions/"
-                             {:params {:xaction (xform-xaction-for-backend xaction-to-add)}
-                              :error-handler
-                              (fn [err]
-                                (.log js/console "error: " (utils/pp err))
-                                ;; (.log js/console "xactions before dissoc: " (utils/pp @xactions))
-                                (swap! xactions dissoc (:uuid xaction-to-add))
-                                ;; (.log js/console "xactions after dissoc: " (utils/pp @xactions))
-                                )
-                              :handler
-                              (fn [] (.log js/console "yay???"))})))
-              }
-             "Add"]]])))
+      (let [
+            ;; _ (.log js/console "inside payee typeahead fn")
+            ;; _ (.log js/console (str "payee: " (utils/pp (:payee @new-xaction))))
+            ;; payee-model (r/atom (:payee @new-xaction))
+            ]
+        [:td
+         [rc-ta/typeahead
+          ;; :model payee-model
+          ;; :model payee-model
+          :rigid? true
+          ;; :value (-> @new-xaction :payee :name)
+          :change-on-blur? true
+          :render-suggestion
+          (fn [suggestion-obj]
+            (do
+              ;; (.log js/console (str "calling render-suggestion:\n"
+              ;;                       (utils/pp {:suggestion-obj suggestion-obj})))
+              (let [payee-exists? (contains? suggestion-obj :id)]
+                (if (not payee-exists?)
+                  (str "Create payee: " (:name suggestion-obj))
+                  (:name suggestion-obj)))))
+          :suggestion-to-string
+          (fn [suggestion-obj]
+            (:name suggestion-obj))
+          :data-source
+          (fn [ta-in callback]
+            (do
+              ;; (.log js/console "ta-in = " ta-in)
+              (ajax/GET
+               "/api/payees"
+               {:params
+                {:q ta-in}
+                :handler
+                (fn [response]
+                  ;; (.log js/console (str response))
+                  (callback
+                   (let [results (-> response :result)]
+                     ;; (.log js/console "results:" (str results))
+                     results)))})
+              nil))
+          :on-change
+          (fn [suggestion-obj]
+            (do
+              ;; (.log js/console (str "calling on-change suggestion\n"
+              ;;                      (utils/pp suggestion-obj) "\n"
+              ;;                      "new-xaction:\n"
+              ;;                      (utils/pp @new-xaction)))
+              ;; (reset! payee-for-new-xaction (:name suggestion-obj))
+              ;; (swap! new-xaction assoc :payee suggestion-obj)
+              ;; (if (not (and (map? suggestion-obj) (contains? suggestion-obj :name)))
+              ;;   ;; TODO: make dddl return a spec for an entity and check agains that
+              ;;   (reset! payee-on-change-value nil)
+              ;;   (reset! payee-on-change-value suggestion-obj))
+              (reset! payee-on-change-value suggestion-obj)
+              ;; (reset! payee-model suggestion-obj)
+              ;; payee-on-change-value
+              )
+            
+            )
+          ]]))))
+
+(defn typeahead-metosin [new-xaction]
+  (let [items (r/atom nil)
+        value (r/atom nil)]
+   [:td
+    [autocomplete/autocomplete
+     { ;; :value (:payee @new-xaction)
+      :value (:payee @new-xaction)
+      :on-change (fn [item]
+                   (.log js/console (str "on-change item: " item))
+                   (swap! new-xaction assoc :payee (:value item))
+                   )
+      :->query (fn [q]
+                 (.log js/console (str ":->query arg: " q)))
+      ;; :items (fn []
+      ;;          (ajax/GET
+      ;;           "/api/payees"
+      ;;           {:params {:q ta-in}}))
+      ;; :value->text (fn [available-values value three four]
+      ;;                (let [_ (.log js/console (str "value->text args: " (utils/pp [available-values value three four])))]
+      ;;                  (:name value)
+      ;;                  ))
+      :value->search (fn [value two three four]
+                       (let [_ (.log js/console (str "value->search args: " (utils/pp [value two three four])))]))
+      ;; :value->search #(get % :name)
+      :items {1 "testing"
+              2 "bye"}
+      :debounce-timeout 1000
+      ;; :items (fn []
+      ;;          ;; (.log js/console (str "args: " (utils/pp [one two three])))
+      ;;          ;; {1 "hi"
+      ;;          ;;  2 "bye"}
+      ;;          ;; ["hi" "bye"]
+      ;;          [[1 "hi"]
+      ;;           [2 "bye"]]
+      ;;          )
+      ;; :items ["hi" "bye"]
+      :search-fields [:value]
+      :term-match-fn (fn [one two three]
+                       (.log js/console (str "term-match-fn args: " (utils/pp [one two three]))))
+      ;; :item->value (fn [item]
+      ;;                (let [res (get-in item [:value :name])
+      ;;                      _ (.log js/console (str "item->value result: " res))]
+      ;;                  res))
+      }]])
+  )
+
+(defn react-select
+  "Select based on a atom/cursor. Pass as state"
+  [{:keys [state]
+    :as props}]
+  [:> js/Select.Async
+   (-> props
+       (dissoc state)
+       (assoc :value @state
+              :on-change (fn [x]
+                           ;; (reset! state (if (some-> x .-value)))
+                           (.log js/console (str "x = " (utils/pp x)))
+                           )))])
+(def options #js[{:value "1"
+               :label "one"}
+              {:value "2"
+               :label "two"}])
+
+(defn load-options [input cb]
+  ;; return sample
+  ;; (cb nil #js{:options (->> ["one" "two" "three"]
+  ;;                           (map (fn [item]
+  ;;                                  {:value item
+  ;;                                   :label (str item)}))
+  ;;                           clj->js)
+  ;;             :complete true})
+  (cb options)
+  )
+
+(defonce !state (atom nil))
+
+(defn payee-react-select []
+  [:td
+   ;; [react-select {:state !state
+   ;;                :load-options load-options
+   ;;                ;; :options options
+   ;;                }]
+   [:> js/Select
+    {:options options}]
+   ])
+
+(defn new-xaction-row []
+  (let [_ (.log js/console "rendering new-xaction-row")
+        new-xaction (r/atom (empty-xaction))
+        ;; payee-for-new-xaction (r/atom nil)
+        ;; payee-model (r/atom (:payee @new-xaction))
+        ;; payee-on-change-value (r/atom (:payee @new-xaction))
+        ;; _ (add-watch
+        ;;    payee-for-new-xaction
+        ;;    :boopty
+        ;;    (fn [key _ old-state new-state]
+        ;;      (.log js/console (str "payee changed, old: " old-state ", new: " new-state))))
+        _ (add-watch
+           new-xaction
+           :bonkters
+           (fn [key _ old-state new-state]
+             (.log js/console (str "new-xaction changed, old:\n" (utils/pp old-state)
+                                   ", new:\n" (utils/pp new-state)))))
+        ]
+    (fn []
+      (let [_ (.log js/console "inside new-xaction-row fn")]
+       [:tr {:key "new-one"}
+        [:td
+         [:input {:type "text"
+                  :size 2
+                  :value (get-in @new-xaction [:date :month])
+                  :on-change #(swap! new-xaction assoc-in [:date :month] (-> % .-target .-value))}]
+         [:span "/"]
+         [:input {:type "text"
+                  :size 2
+                  :value (get-in @new-xaction [:date :day])
+                  :on-change #(swap! new-xaction assoc-in [:date :day] (-> % .-target .-value))}]
+         [:span "/"]
+         [:input {:type "text"
+                  :size 4
+                  :value (get-in @new-xaction [:date :year])
+                  :on-change #(swap! new-xaction assoc-in [:date :year] (-> % .-target .-value))}]]
+        [:td [:input {:type "text"
+                      :value (:description @new-xaction)
+                      :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]
+        ;;[payee-typeahead-recom new-xaction]
+        ;; [typeahead-metosin new-xaction]
+        ;; [payee-react-select]
+        ;; [payee-typeahead-metosin new-xaction]
+        [:td
+         [:div {:class "dropdown"}
+          [:div {:class "dropdown-trigger"}
+           [:input {:class "input"
+                    :id "what"
+                    :type "text"
+                    :placeholder "what"
+                    :aria-haspopup true
+                    :aria-controls "what-menu"}]]
+          [:div {:class "dropdown-menu"
+                 :id "what-menu"
+                 :role "menu"}]]]
+        [:td [:input {:type "text"
+                      :value (:amount @new-xaction)
+                      :on-change (fn [amt-fld]
+                                   (let [amt-val (-> amt-fld .-target .-value)
+                                         is-valid? (spec/valid? amount-spec amt-val)]
+                                     (if (and (not (= amt-val ""))
+                                              (not is-valid?))
+                                       (do
+                                         (.log js/console (str amt-val " is invalid for amount"))
+                                         nil)
+                                       (swap! new-xaction assoc :amount amt-val))))}]]
+        [:td [:button
+              {:on-click
+               (fn [evt]
+                 (let [xaction-to-add @new-xaction
+                       amount-explain (spec/explain-data amount-spec (:amount xaction-to-add))
+                       _ (.log js/console (str "amount-spec-explain:\n" amount-explain))]
+                   (if (not (nil? amount-explain))
+                     (.log js/console (str "amount-spec-explain:\n" (utils/pp amount-explain)))
+                     (do
+                       (reset! last-date-used (time/local-date
+                                               (js/parseInt (get-in @new-xaction [:date :year]))
+                                               (js/parseInt (get-in @new-xaction [:date :month]))
+                                               (js/parseInt (get-in @new-xaction [:date :day]))))
+                       (swap! xactions assoc (:uuid xaction-to-add) xaction-to-add)
+                       (reset! new-xaction (empty-xaction))
+                       ;; (.log js/console "new-xaction: " (utils/pp xaction-to-add))
+                       (ajax/POST "/api/xactions/"
+                                  {:params {:xaction (xform-xaction-for-backend xaction-to-add)}
+                                   :error-handler
+                                   (fn [err]
+                                     (.log js/console "error: " (utils/pp err))
+                                     ;; (.log js/console "xactions before dissoc: " (utils/pp @xactions))
+                                     (swap! xactions dissoc (:uuid xaction-to-add))
+                                     ;; (.log js/console "xactions after dissoc: " (utils/pp @xactions))
+                                     )
+                                   :handler
+                                   (fn [] (.log js/console "yay???"))})))))
+               }
+              "Add"]]]))))
 
 
 (defn home-page []
@@ -209,6 +447,8 @@
       [:tr
        [:th "date"]
        [:th "desc"]
+       [:th "payee"]
+       ;; [:th "payee-metosin"]
        [:th "amount"]
        [:th "controls"]]]
      [:tbody
