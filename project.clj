@@ -7,6 +7,7 @@
                  [buddy "2.0.0"]
                  ;; [cider/cider-nrepl "0.15.0-SNAPSHOT"]
                  ;; [cider/cider-nrepl "0.14.0"]
+                 [cider/cider-nrepl "0.21.1"]
                  [cljs-ajax "0.8.0"]
                  [compojure "1.6.1"]
                  [conman "0.8.3"]
