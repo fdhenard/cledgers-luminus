@@ -16,16 +16,14 @@ You will need [Leiningen][1] 2.0 or above installed.
 - [Leiningen][1] 2.0 or above installed.
 - db setup
     - postgresql installed
+        - use homebrew to install and use `$ brew services start postgresql`
+        - if first time installing, you may need to run `$ createdb` to create the db with username
     - PSQL - `> create role cledgers_luminus with createdb login;`
     - `$ createdb cledgers_luminus -O cledgers_luminus`
     - run migrations
         - `$ lein run migrate`
     - insert self as user
-        - in repl
-            - `> (mount/start)`
-            - compile `cledgers-luminus.dev.scripts`
-            - `> (cledgers-luminus.dev.scripts/create-user-s! :username "frank" :last-name "Henard" :first-name "Frank" :email "fdhenard@gmail.com" :pass "tanky" :is-admin? true :is-active? true)`
-
+        - eval the code in the comment of `cledgers-luminus.dev.scripts`
 
 ## Running
 
