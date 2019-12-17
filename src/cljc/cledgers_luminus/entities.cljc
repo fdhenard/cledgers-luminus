@@ -27,6 +27,17 @@
                           :type :character
                           :max-length 300}
                          ]}
+               {:name "payee"
+                :fields [{:name "name"
+                          :type :character
+                          :max-length 100
+                          :unique true}
+                         {:name "time-created"
+                          :type :date-time
+                          :default :current-time}
+                         {:name "created-by"
+                          :type :foreign-key
+                          :references :cledgers-user}]}
                {:name "xaction"
                 :fields [{:name "uuid"
                           :type :character
@@ -35,6 +46,9 @@
                          {:name "description"
                           :type :character
                           :max-length 250}
+                         {:name "payee"
+                          :type :foreign-key
+                          :references :payee}
                          {:name "amount"
                           :type :numeric
                           :total-length 10

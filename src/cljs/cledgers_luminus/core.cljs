@@ -1,4 +1,3 @@
-
 (ns cledgers-luminus.core
   (:require [reagent.core :as r]
             [re-frame.core :as rf]
@@ -14,50 +13,10 @@
             [accountant.core :as accountant]
             [cledgers-luminus.utils :as utils]
             [ajax.core :as ajax]
-            ;; [cledgers-luminus.bootstrap :as bs]
-            ;; cljsjs.react-bootstrap
-            ;; ["react-boostrap" :as bs]
             [cljs-uuid-utils.core :as uuid]
             [cljs-time.core :as time]
-            )
+            [cledgers-luminus.bulma-typeahead :as typeahead])
   (:import goog.History))
-
-;; (defn nav-link [uri title page collapsed?]
-;;   (let [selected-page (rf/subscribe [:page])]
-;;     [:li.nav-item
-;;      {:class (when (= page @selected-page) "active")}
-;;      [:a.nav-link
-;;       {:href uri
-;;        :on-click #(reset! collapsed? true)} title]]))
-
-;; (defn navbar []
-;;   (r/with-let [collapsed? (r/atom true)]
-;;     [:nav.navbar.navbar-dark.bg-primary
-;;      [:button.navbar-toggler.hidden-sm-up
-;;       {:on-click #(swap! collapsed? not)} "☰"]
-;;      [:div.collapse.navbar-toggleable-xs
-;;       (when-not @collapsed? {:class "in"})
-;;       [:a.navbar-brand {:href "#/"} "cledgers-luminus"]
-;;       [:ul.nav.navbar-nav
-;;        [nav-link "#/" "Home" :home collapsed?]
-;;        [nav-link "#/about" "About" :about collapsed?]]]]))
-
-;; (defn navbar []
-;;   [bs/Navbar {:class "navbar-inverse"}
-;;    [bs/NavbarHeader
-;;     [bs/NavbarBrand
-;;      [:a {:href "#"} "cledgers-luminus"]]
-;;     [bs/NavbarToggle]]
-;;    [bs/NavbarCollapse
-;;     [bs/Nav
-;;      [bs/NavItem {:href "#/"} "Home"]
-;;      [bs/NavItem {:href "#/about"} "About"]
-;;      [bs/NavDropdown {:title "User" :id "user-dropdown"}
-;;       [bs/MenuItem
-;;        {:on-click #(ajax/POST "/api/logout/"
-;;                               :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
-;;                               :handler (fn [] (rf/dispatch [:logout nil])))}
-;;        "Logout"]]]]])
 
 (defn navbar []
   [:nav.navbar {:role "navigation" :aria-label "main navigation"}
@@ -77,29 +36,7 @@
         {:on-click #(ajax/POST "/api/logout/"
                               :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
                               :handler (fn [] (rf/dispatch [:logout nil])))}
-       "Logout"
-        ]]]]]]
-
-  ;; [:> bs/Navbar
-  ;;  [:> bs/Navbar.Brand "testing"]]
-  ;; [bs/Navbar
-  ;;  [bs/NavbarBrand "hi"]]
-  ;; [:div "hi"]
-  ;; [bs/Navbar
-  ;;  [bs/NavbarToggle {:aria-controls "basic-navbar-nav"}]
-  ;;  [bs/NavbarBrand
-  ;;   [:a {:href "#"} "cledgers-luminus stankwhat"]]
-  ;;  [bs/NavbarCollapse
-  ;;   [bs/Nav
-  ;;    [bs/NavLink {:href "#/"} "Home"]
-  ;;    [bs/NavLink {:href "#/about"} "About"]
-  ;;    [bs/NavDropdown {:title "User" :id "user-dropdown"}
-  ;;     [bs/NavDropdownItem
-  ;;      {:on-click #(ajax/POST "/api/logout/"
-  ;;                             :error-handler (fn [] (.log js/console "error: " (utils/pp %)))
-  ;;                             :handler (fn [] (rf/dispatch [:logout nil])))}
-  ;;      "Logout"]]]]]
-  )
+       "Logout"]]]]]])
 
 
 (defn about-page []
@@ -147,6 +84,14 @@
   (as-> xaction $
     (dissoc $ :add-waiting)))
 
+(defn get-payees! [q-str callback]
+  #_(println "callback:" callback)
+  (ajax/GET "/api/payees"
+            {:params {:q q-str}
+             :handler callback
+             :error-handler (fn [err]
+                              (.log js/console "error: " (utils/pp err)))}))
+
 (defn new-xaction-row []
   (let [new-xaction (r/atom (empty-xaction))]
     (fn []
@@ -166,6 +111,12 @@
                  :size 4
                  :value (get-in @new-xaction [:date :year])
                  :on-change #(swap! new-xaction assoc-in [:date :year] (-> % .-target .-value))}]]
+       [:td [typeahead/typeahead-component
+             {:value (get-in @new-xaction [:payee :name])
+              :query-func get-payees!
+              :on-change #(do
+                            (println (utils/pp %))
+                            (swap! new-xaction assoc :payee %))}]]
        [:td [:input {:type "text"
                      :value (:description @new-xaction)
                      :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]
@@ -208,6 +159,7 @@
      [:thead
       [:tr
        [:th "date"]
+       [:th "payee"]
        [:th "desc"]
        [:th "amount"]
        [:th "controls"]]]
@@ -253,8 +205,7 @@
        [:div.container "dater"
         [:ul
          [:li "page: " @(rf/subscribe [:page])]
-         [:li "user: " user]]]
-       ])))
+         [:li "user: " user]]]])))
 
 ;; -------------------------
 ;; Routes

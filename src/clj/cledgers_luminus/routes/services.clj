@@ -1,11 +1,12 @@
 (ns cledgers-luminus.routes.services
-  (:require [compojure.core :refer [defroutes POST]]
+  (:require [compojure.core :refer [defroutes POST GET]]
             [clojure.tools.logging :as log]
             [cledgers-luminus.utils :as utils]
             [cledgers-luminus.db.core :as db]
             [buddy.hashers :as hashers]
             [clojure.java.jdbc :as jdbc]
-            [java-time :as time]))
+            [java-time :as time]
+            [honeysql.core :as sql]))
 
 (defroutes public-service-routes
   (POST "/api/login/" request
@@ -22,6 +23,14 @@
                 {:status 200
                  :session (assoc session :identity user-res)
                  :body user-res}))))))
+
+(defn get-payees [q]
+  (let [the-hsql {:select [:id :name]
+                  :from [:payee]
+                  :where [:like :name (str q "%")]
+                  :limit 10}
+        results (jdbc/query db/*db* (sql/format the-hsql))]
+    results))
 
 (defroutes services-routes
   (POST "/api/logout/" request {:status 200
@@ -40,4 +49,9 @@
           (log/info (str "xactions post request:\n" (utils/pp {:request request})))
           ;; (jdbc/insert! db/*db* :xaction updated-xaction)
           (db/create-xaction! updated-xaction)
-          {:status 200})))
+          {:status 200}))
+  (GET "/api/payees" request
+       (let [q-parm (-> request :params :q)
+             result (get-payees q-parm)]
+         {:status 200
+          :body {:result result}})))

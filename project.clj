@@ -44,6 +44,7 @@
                  [declarative-ddl "0.1.1-SNAPSHOT"]
                  [com.andrewmcveigh/cljs-time "0.5.2"]
                  [clojure.java-time "0.3.2"]
+                 [honeysql "0.9.8"]
                  ]
 
   :min-lein-version "2.0.0"
