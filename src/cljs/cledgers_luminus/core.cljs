@@ -145,7 +145,9 @@
                                 ;; (.log js/console "xactions after dissoc: " (utils/pp @xactions))
                                 )
                               :handler
-                              (fn [] (.log js/console "yay???"))})))
+                              (fn [response]
+                                (.log js/console "success adding xaction")
+                                (cljs.pprint/pprint response))})))
               }
              "Add"]]])))
 
@@ -172,7 +174,8 @@
                       "rowhighlight")]
           [:tr {:key (:id xaction)
                 :class class}
-           [:td (:date xaction)]
+           [:td (str (:date xaction))]
+           [:td (get-in xaction [:payee :name])]
            [:td (:description xaction)]
            [:td (:amount xaction)]]))]]]])
 
