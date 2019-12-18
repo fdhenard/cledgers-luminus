@@ -48,8 +48,15 @@
               _ (println "new-xaction:" (utils/pp updated-xaction))]
           (log/info (str "xactions post request:\n" (utils/pp {:request request})))
           ;; (jdbc/insert! db/*db* :xaction updated-xaction)
-          (db/create-xaction! updated-xaction)
+          (let [payee (:payee updated-xaction)]
+           (if (:is-new payee)
+             (let [updated-xaction (-> updated-xaction
+                                       (assoc :payee-name (:name payee))
+                                       (dissoc :payee))]
+               (db/create-xaction-and-payee! updated-xaction))
+             (db/create-xaction! updated-xaction)))
           {:status 200}))
+
   (GET "/api/payees" request
        (let [q-parm (-> request :params :q)
              result (get-payees q-parm)]

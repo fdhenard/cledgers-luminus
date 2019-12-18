@@ -114,9 +114,10 @@
        [:td [typeahead/typeahead-component
              {:value (get-in @new-xaction [:payee :name])
               :query-func get-payees!
-              :on-change #(do
-                            (println (utils/pp %))
-                            (swap! new-xaction assoc :payee %))}]]
+              :on-change (fn [selection]
+                           (let [payee {:name (:value selection)
+                                        :is-new (:is-new selection)}]
+                             (swap! new-xaction assoc :payee payee)))}]]
        [:td [:input {:type "text"
                      :value (:description @new-xaction)
                      :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]

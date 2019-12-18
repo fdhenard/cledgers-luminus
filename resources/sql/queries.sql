@@ -29,3 +29,22 @@ WHERE id = :id
 INSERT INTO xaction
 (description, amount, date, created_by_id, uuid)
 VALUES (:description, :amount, :date, :created-by-id, :uuid)
+
+-- :name create-xaction-and-payee! :! :n
+-- :doc creates a new payee and new xaction
+WITH payee_insert_id_row AS (
+  INSERT INTO payee
+    (name, created_by_id)
+  VALUES
+    (:payee-name, :created-by-id)
+  RETURNING id
+)
+INSERT INTO xaction
+  (uuid, description, payee_id, amount, date, created_by_id)
+VALUES
+  (:uuid,
+   :description,
+   (SELECT id FROM payee_insert_id_row),
+   :amount,
+   :date,
+   :created-by-id)
