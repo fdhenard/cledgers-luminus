@@ -27,8 +27,8 @@ WHERE id = :id
 -- :name create-xaction! :! :n
 -- :doc creates a new xaction
 INSERT INTO xaction
-(description, amount, date, created_by_id, uuid)
-VALUES (:description, :amount, :date, :created-by-id, :uuid)
+(description, amount, date, created_by_id, uuid, payee_id)
+VALUES (:description, :amount, :date, :created-by-id, :uuid, :payee-id)
 
 -- :name create-xaction-and-payee! :! :n
 -- :doc creates a new payee and new xaction

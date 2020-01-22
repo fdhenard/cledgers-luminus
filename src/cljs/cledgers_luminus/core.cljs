@@ -1,5 +1,6 @@
 (ns cledgers-luminus.core
-  (:require [reagent.core :as r]
+  (:require [cljs.pprint :as pp]
+            [reagent.core :as r]
             [re-frame.core :as rf]
             [secretary.core :as secretary]
             [goog.events :as events]
@@ -86,11 +87,18 @@
 
 (defn get-payees! [q-str callback]
   #_(println "callback:" callback)
-  (ajax/GET "/api/payees"
-            {:params {:q q-str}
-             :handler callback
-             :error-handler (fn [err]
-                              (.log js/console "error: " (utils/pp err)))}))
+  (let [response->results
+        (fn [response]
+          (let [payees (-> response :result)
+                #_ (println "something:")
+                #_ (pp/pprint something)]
+            (callback payees)))]
+
+   (ajax/GET "/api/payees"
+             {:params {:q q-str}
+              :handler response->results
+              :error-handler (fn [err]
+                               (.log js/console "error: " (utils/pp err)))})))
 
 (defn new-xaction-row []
   (let [new-xaction (r/atom (empty-xaction))]
@@ -116,8 +124,13 @@
               :query-func get-payees!
               :on-change (fn [selection]
                            (let [payee {:name (:value selection)
-                                        :is-new (:is-new selection)}]
-                             (swap! new-xaction assoc :payee payee)))}]]
+                                        :is-new (:is-new selection)
+                                        :id (:id selection)}]
+                             (swap! new-xaction assoc :payee payee)))
+              :item->text (fn [item]
+                            ;; (println "calling item->text")
+                            ;; (pp/pprint item)
+                            (:name item))}]]
        [:td [:input {:type "text"
                      :value (:description @new-xaction)
                      :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]

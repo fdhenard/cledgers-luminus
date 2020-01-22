@@ -54,7 +54,10 @@
                                        (assoc :payee-name (:name payee))
                                        (dissoc :payee))]
                (db/create-xaction-and-payee! updated-xaction))
-             (db/create-xaction! updated-xaction)))
+             (let [updated-xaction (-> updated-xaction
+                                       (assoc :payee-id (:id payee))
+                                       (dissoc :payee))]
+              (db/create-xaction! updated-xaction))))
           {:status 200}))
 
   (GET "/api/payees" request
