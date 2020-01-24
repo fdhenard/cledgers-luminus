@@ -159,8 +159,11 @@
                                 )
                               :handler
                               (fn [response]
-                                (.log js/console "success adding xaction")
-                                (cljs.pprint/pprint response))})))
+                                (let [added-xaction (get @xactions (:uuid xaction-to-add))
+                                      added-xaction (dissoc added-xaction :add-waiting)]
+                                  (swap! xactions assoc (:uuid xaction-to-add) added-xaction)
+                                  (.log js/console "success adding xaction")
+                                  (cljs.pprint/pprint response)))})))
               }
              "Add"]]])))
 
