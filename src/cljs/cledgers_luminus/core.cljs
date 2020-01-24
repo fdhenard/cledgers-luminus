@@ -182,10 +182,10 @@
      [:tbody
       [new-xaction-row]
       (for [[_ xaction] @xactions]
-        (let [;; _ (.log js/console "xaction: " (utils/pp xaction))
+        (let [#_ (.log js/console "xaction: " (utils/pp xaction))
               class (when (:add-waiting xaction)
                       "rowhighlight")]
-          [:tr {:key (:id xaction)
+          [:tr {:key (:uuid xaction)
                 :class class}
            [:td (str (:date xaction))]
            [:td (get-in xaction [:payee :name])]

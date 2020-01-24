@@ -5,12 +5,9 @@
 (defn query-callback [matches-atom is-loading-atom item->text results]
   ;; (println "calling callback")
   ;; (pp/pprint results)
-  (let [results-with-text (map #(assoc % :text (item->text %)) results)
-        #_ (println "results-with-text = ")
-        #_ (pp/pprint results-with-text)]
-   (do
-     (reset! matches-atom (set results-with-text))
-     (reset! is-loading-atom false))))
+  (do
+    (reset! matches-atom results)
+    (reset! is-loading-atom false)))
 
 
 (defn on-typeahead-change! [new-val count-atom value-atom matches-atom is-loading-atom query-func item->text]
@@ -71,33 +68,42 @@
          [:div {:class #{:dropdown-menu} :id :dropdown-menu :role :menu}
           [:div {:class #{:dropdown-content}}
            (let [matches @matches-atom
-                 textbox-val @textbox-val-atom]
-             (if (<= (count matches) 0)
-               [:a {:href "#"
-                    :class #{:dropdown-item}
-                    :on-click (fn [evt]
-                                (do
-                                  (reset! selection-val-atom textbox-val)
-                                  (on-change {:value textbox-val
-                                              :is-new true
-                                              :id nil})))}
-                (str "create new \"" textbox-val "\"")]
-               (for [item matches]
-                 (do
-                   ;; (println "hi")
-                   ;; (pp/pprint item)
-                   (let [text (item->text item)
-                         #_ (println "text:" text)
-                         id (:id item)]
-                     ^{:key id}
-                     [:a {:href "#"
-                          :class #{:dropdown-item}
-                          :on-click (fn [evt]
-                                      (do
-                                        #_(println "setting selection-val-atom to" text)
-                                        (reset! textbox-val-atom text)
-                                        (reset! selection-val-atom text)
-                                        (on-change {:value text
-                                                    :is-new false
-                                                    :id id})))}
-                      (:text item)])))))]]]))))
+                 #_ (println "matches:")
+                 #_ (pp/pprint matches)
+                 textbox-val @textbox-val-atom
+                 match-texts (->> matches
+                                  (map item->text)
+                                  set)
+                 has-exact-match (contains? match-texts textbox-val)
+                 create-new {:id nil
+                             :name textbox-val}
+                 dropdown-vals (if has-exact-match
+                                 matches
+                                 (conj matches create-new))]
+             (for [item dropdown-vals]
+               (let [text (item->text item)
+                     #_ (println "text:" text)
+                     id (:id item)]
+                 (if id
+                   ^{:key id}
+                   [:a {:href "#"
+                        :class #{:dropdown-item}
+                        :on-click (fn [evt]
+                                    (do
+                                      #_(println "setting selection-val-atom to" text)
+                                      (reset! textbox-val-atom text)
+                                      (reset! selection-val-atom text)
+                                      (on-change {:value text
+                                                  :is-new false
+                                                  :id id})))}
+                    text]
+                   ^{:key "new"}
+                   [:a {:href "#"
+                        :class #{:dropdown-item}
+                        :on-click (fn [evt]
+                                    (do
+                                      (reset! selection-val-atom textbox-val)
+                                      (on-change {:value textbox-val
+                                                  :is-new true
+                                                  :id nil})))}
+                    (str "create new \"" textbox-val "\"")]))))]]]))))
