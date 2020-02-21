@@ -1,6 +1,9 @@
-(ns cledgers-luminus.entities)
+(ns cledgers-luminus.entities
+  (:require [clojure.edn :as edn]))
 
-(def entities [{:name "cledgers-user"
+(def entities (-> "resources/declarative-ddl/entities.edn" slurp edn/read-string))
+
+#_(def entities [{:name "cledgers-user"
                 :fields [{:name "username"
                           :type :character
                           :max-length 30
@@ -60,4 +63,12 @@
                           :default :current-time}
                          {:name "created-by"
                           :type :foreign-key
-                          :references :cledgers-user}]}])
+                          :references :cledgers-user}
+                         {:name "ledger"
+                          :type :foreign-key
+                          :references :ledger}]}
+               {:name "ledger"
+                :fields [{:name "name"
+                          :type :character
+                          :max-length 100
+                          :unique true}]}])

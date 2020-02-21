@@ -36,32 +36,61 @@
   (POST "/api/logout/" request {:status 200
                                 :session (dissoc (:session request) :identity)})
   (POST "/api/xactions/" request
-        (let [xaction (-> request :params :xaction)
-              new-date (time/local-date
-                        (get-in xaction [:date :year])
-                        (get-in xaction [:date :month])
-                        (get-in xaction [:date :day]))
-              updated-xaction (-> xaction
-                                  (assoc :date new-date)
-                                  (assoc :amount (-> xaction :amount bigdec))
-                                  (assoc :created-by-id (get-in request [:session :identity :id])))
-              _ (println "new-xaction:" (utils/pp updated-xaction))]
-          (log/info (str "xactions post request:\n" (utils/pp {:request request})))
-          ;; (jdbc/insert! db/*db* :xaction updated-xaction)
-          (let [payee (:payee updated-xaction)]
-           (if (:is-new payee)
-             (let [updated-xaction (-> updated-xaction
-                                       (assoc :payee-name (:name payee))
-                                       (dissoc :payee))]
-               (db/create-xaction-and-payee! updated-xaction))
-             (let [updated-xaction (-> updated-xaction
-                                       (assoc :payee-id (:id payee))
-                                       (dissoc :payee))]
-              (db/create-xaction! updated-xaction))))
-          {:status 200}))
+        (jdbc/with-db-transaction [tx-conn db/*db*]
+          (let [user-id (get-in request [:session :identity :id])
+                xaction (-> request :params :xaction)
+                payee (:payee xaction)
+                ledger (:ledger xaction)
+                payee-id
+                (if-not (:is-new payee)
+                  (:id payee)
+                  (let [payee (assoc payee :created-by-id user-id)
+                        create-res (db/create-payee! tx-conn payee)]
+                    (:id create-res)))
+                ledger-id
+                (if-not (:is-new ledger)
+                  (:id ledger)
+                  (let [ledger (assoc ledger :created-by-id user-id)
+                        create-res (db/create-ledger! tx-conn ledger)]
+                    (:id create-res)))
+                new-date (time/local-date
+                          (get-in xaction [:date :year])
+                          (get-in xaction [:date :month])
+                          (get-in xaction [:date :day]))
+                updated-xaction (-> xaction
+                                    (dissoc :payee)
+                                    (dissoc :ledger)
+                                    (assoc :date new-date)
+                                    (assoc :amount (-> xaction :amount bigdec))
+                                    (assoc :created-by-id user-id)
+                                    (assoc :payee-id payee-id)
+                                    (assoc :ledger-id ledger-id))
+                _ (log/debug "new-xaction:" (utils/pp updated-xaction))
+                #_ (log/debug (str "xactions post request:\n"
+                                   (utils/pp {:request request})))
+                #_ (jdbc/insert! tx-conn :xaction updated-xaction)
+                _ (db/create-xaction! tx-conn updated-xaction)]
+            {:status 200})))
 
   (GET "/api/payees" request
        (let [q-parm (-> request :params :q)
              result (get-payees q-parm)]
          {:status 200
-          :body {:result result}})))
+          :body {:result result}}))
+
+  (GET "/api/ledgers" request
+       (let [q-parm (get-in request [:params :q])
+             result
+             (let [the-hql
+                   {:select [:id :name]
+                    :from [:ledger]
+                    :where [:like :name (str q-parm "%")]
+                    :limit 10}
+                   results
+                   (jdbc/query db/*db* (sql/format the-hql))]
+               results)]
+         {:status 200
+          :body {:result result}}))
+
+
+  )

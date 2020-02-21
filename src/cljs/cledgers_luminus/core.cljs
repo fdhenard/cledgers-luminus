@@ -100,6 +100,18 @@
               :error-handler (fn [err]
                                (.log js/console "error: " (utils/pp err)))})))
 
+
+(defn get-ledgers! [q-str callback]
+  (let [response->results
+        (fn [response]
+          (let [ledgers (-> response :results)]
+            (callback ledgers)))]
+    (ajax/GET "/api/ledgers"
+              {:params {:q q-str}
+               :handler response->results
+               :error-handler (fn [err]
+                                (.log js/console "error: " (utils/pp err)))})))
+
 (defn new-xaction-row []
   (let [new-xaction (r/atom (empty-xaction))]
     (fn []
@@ -131,6 +143,17 @@
                             ;; (println "calling item->text")
                             ;; (pp/pprint item)
                             (:name item))}]]
+       [:td [typeahead/typeahead-component
+             {:value (get-in @new-xaction [:ledger :name])
+              :query-func get-ledgers!
+              :on-change (fn [selection]
+                           (let [ledger {:name (:value selection)
+                                         :is-new (:is-new selection)
+                                         :id (:id selection)}]
+                             (swap! new-xaction assoc :ledger ledger)))
+              :item->text (fn [item]
+                            (:name item))}
+             ]]
        [:td [:input {:type "text"
                      :value (:description @new-xaction)
                      :on-change #(swap! new-xaction assoc :description (-> % .-target .-value))}]]
@@ -179,6 +202,7 @@
       [:tr
        [:th "date"]
        [:th "payee"]
+       [:th "ledger"]
        [:th "desc"]
        [:th "amount"]
        [:th "controls"]]]
@@ -190,8 +214,10 @@
                       "rowhighlight")]
           [:tr {:key (:uuid xaction)
                 :class class}
-           [:td (str (:date xaction))]
+           [:td (let [date (:date xaction)]
+                  (str (:month date) "/" (:day date) "/" (:year date)))]
            [:td (get-in xaction [:payee :name])]
+           [:td (get-in xaction [:ledger :name])]
            [:td (:description xaction)]
            [:td (:amount xaction)]]))]]]])
 

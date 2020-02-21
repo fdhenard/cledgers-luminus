@@ -27,24 +27,21 @@ WHERE id = :id
 -- :name create-xaction! :! :n
 -- :doc creates a new xaction
 INSERT INTO xaction
-(description, amount, date, created_by_id, uuid, payee_id)
-VALUES (:description, :amount, :date, :created-by-id, :uuid, :payee-id)
-
--- :name create-xaction-and-payee! :! :n
--- :doc creates a new payee and new xaction
-WITH payee_insert_id_row AS (
-  INSERT INTO payee
-    (name, created_by_id)
-  VALUES
-    (:payee-name, :created-by-id)
-  RETURNING id
-)
-INSERT INTO xaction
-  (uuid, description, payee_id, amount, date, created_by_id)
+  (description, amount, date, created_by_id, uuid, payee_id, ledger_id)
 VALUES
-  (:uuid,
-   :description,
-   (SELECT id FROM payee_insert_id_row),
-   :amount,
-   :date,
-   :created-by-id)
+  (:description, :amount, :date, :created-by-id, :uuid, :payee-id, :ledger-id)
+
+-- :name create-payee! :returning-execute :1
+-- :doc creates a new payee
+INSERT INTO payee
+  (name, created_by_id)
+VALUES
+  (:name, :created-by-id)
+RETURNING id;
+
+-- :name create-ledger! :returning-execute :1
+INSERT INTO ledger
+  (name, created_by_id)
+VALUES
+  (:name, :created-by-id)
+RETURNING id;

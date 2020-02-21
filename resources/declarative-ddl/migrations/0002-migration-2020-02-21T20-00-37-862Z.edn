@@ -1,0 +1,9 @@
+{:dal-version "3.0.2",
+ :differences
+ [{:type :diff-as-list.core/KeyMissingDiff,
+   :path [:ledger :fields :created-by],
+   :value
+   {:name "created-by",
+    :type :foreign-key,
+    :references :cledgers-user},
+   :missing-in :one}]}
