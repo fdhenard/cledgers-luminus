@@ -104,7 +104,7 @@
 (defn get-ledgers! [q-str callback]
   (let [response->results
         (fn [response]
-          (let [ledgers (-> response :results)]
+          (let [ledgers (-> response :result)]
             (callback ledgers)))]
     (ajax/GET "/api/ledgers"
               {:params {:q q-str}

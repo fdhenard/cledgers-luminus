@@ -60,15 +60,14 @@
                 updated-xaction (-> xaction
                                     (dissoc :payee)
                                     (dissoc :ledger)
-                                    (assoc :date new-date)
-                                    (assoc :amount (-> xaction :amount bigdec))
-                                    (assoc :created-by-id user-id)
-                                    (assoc :payee-id payee-id)
-                                    (assoc :ledger-id ledger-id))
+                                    (merge {:date new-date
+                                            :amount (-> xaction :amount bigdec)
+                                            :created-by-id user-id
+                                            :payee-id payee-id
+                                            :ledger-id ledger-id}))
                 _ (log/debug "new-xaction:" (utils/pp updated-xaction))
                 #_ (log/debug (str "xactions post request:\n"
                                    (utils/pp {:request request})))
-                #_ (jdbc/insert! tx-conn :xaction updated-xaction)
                 _ (db/create-xaction! tx-conn updated-xaction)]
             {:status 200})))
 
